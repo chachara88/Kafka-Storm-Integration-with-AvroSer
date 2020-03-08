@@ -31,11 +31,7 @@ import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.InterruptException;
 import org.apache.kafka.common.errors.RetriableException;
 import org.apache.storm.kafka.spout.*;
-//import org.apache.storm.kafka.spout.KafkaSpoutConfig.ProcessingGuarantee;
-import org.stormexample.AvroKafkaSpoutConfig.ProcessingGuarantee;
 import org.apache.storm.kafka.spout.internal.*;
-
-import org.apache.storm.kafka.spout.internal.CommitMetadataManager;
 import org.apache.storm.kafka.spout.metrics.KafkaOffsetMetric;
 import org.apache.storm.kafka.spout.subscription.TopicAssigner;
 import org.apache.storm.spout.SpoutOutputCollector;
@@ -44,13 +40,14 @@ import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichSpout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stormexample.AvroKafkaSpoutConfig.ProcessingGuarantee;
 
 public class AvroKafkaSpout<K, V> extends BaseRichSpout {
     private static final long serialVersionUID = 4151921085047987154L;
     public static final long TIMER_DELAY_MS = 500L;
     private static final Logger LOG = LoggerFactory.getLogger(AvroKafkaSpout.class);
     protected SpoutOutputCollector collector;
-   private final AvroKafkaSpoutConfig<K, V> avroKafkaSpoutConfig;
+    private final AvroKafkaSpoutConfig<K, V> avroKafkaSpoutConfig;
     private final ConsumerFactory<K, V> kafkaConsumerFactory;
     private final TopicAssigner topicAssigner;
     private transient Consumer<K, V> consumer;
@@ -519,6 +516,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         while(var3.hasNext()) {
             String stream = (String)var3.next();
             declarer.declareStream(stream, translator.getFieldsFor(stream));
+            /*TODO To be adapted so as different streams to be sent ot different bolts
+            * For specific topics where 2 variables needs to be calculated*/
         }
 
     }

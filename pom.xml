@@ -25,6 +25,16 @@
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
     <dependencies>
         <dependency>
@@ -56,8 +66,29 @@
             <version>1.7.5</version>
             <scope>test</scope>
         </dependency>
-
-
+        <!-- https://mvnrepository.com/artifact/org.apache.avro/avro -->
+        <dependency>
+            <groupId>org.apache.avro</groupId>
+            <artifactId>avro</artifactId>
+            <version>1.8.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.espertech</groupId>
+            <artifactId>esper</artifactId>
+            <version>5.3.0</version>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>3.8.1</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.variacode.cep.storm.esper/storm-esper-bolt -->
+        <dependency>
+            <groupId>com.variacode.cep.storm.esper</groupId>
+            <artifactId>storm-esper-bolt</artifactId>
+            <version>0.1</version>
+        </dependency>
     </dependencies>
 
 

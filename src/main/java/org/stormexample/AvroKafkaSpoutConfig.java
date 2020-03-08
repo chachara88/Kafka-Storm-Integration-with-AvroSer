@@ -54,15 +54,15 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
     }
 
     public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, String... topics) {
-        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withStringDeserializers();
+        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
     }
 
     public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, Set<String> topics) {
-        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withStringDeserializers();
+        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
     }
 
     public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, Pattern topics) {
-        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withStringDeserializers();
+        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
     }
 
     public long getOffsetsCommitPeriodMs() {
@@ -212,6 +212,12 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
         private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
             this.setProp("key.deserializer", StringDeserializer.class);
             this.setProp("value.deserializer", StringDeserializer.class);
+            return this;
+        }
+
+        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializer() {
+            this.setProp("key.deserializer", CustomAvroDeserializer.class);
+            this.setProp("value.deserializer", CustomAvroDeserializer.class);
             return this;
         }
 
