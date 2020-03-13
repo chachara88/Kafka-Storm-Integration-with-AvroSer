@@ -12,6 +12,16 @@
         <storm.version>2.0.0</storm.version>
         <kafka.version>2.0.0</kafka.version>
     </properties>
+    
+    <repositories>
+
+		<repository>
+			<id>confluent</id>
+			<url>http://packages.confluent.io/maven/</url>
+		</repository>
+
+
+	</repositories>
     <build>
         <pluginManagement>
             <plugins>
@@ -89,6 +99,17 @@
             <artifactId>storm-esper-bolt</artifactId>
             <version>0.1</version>
         </dependency>
+        <dependency>
+			<groupId>org.apache.avro</groupId>
+			<artifactId>avro</artifactId>
+			<version>1.8.0</version>
+		</dependency>
+		<dependency>
+			<groupId>io.confluent</groupId>
+			<artifactId>kafka-avro-serializer</artifactId>
+			<!-- For CP 3.0.0 -->
+			<version>3.1.1</version>
+		</dependency>
     </dependencies>
 
 
