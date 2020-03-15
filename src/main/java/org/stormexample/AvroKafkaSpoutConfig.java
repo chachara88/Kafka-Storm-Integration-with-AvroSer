@@ -7,8 +7,11 @@ package org.stormexample;
 
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.storm.annotation.InterfaceStability.Unstable;
 import org.apache.storm.kafka.spout.EmptyKafkaTupleListener;
@@ -21,6 +24,9 @@ import org.apache.storm.kafka.spout.subscription.ManualPartitioner;
 import org.apache.storm.kafka.spout.subscription.TopicFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import io.confluent.kafka.serializers.KafkaAvroDeserializer;
+
+import org.apache.kafka.common.serialization.LongDeserializer;
 
 public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
     private static final long serialVersionUID = 141902646130682494L;
@@ -54,16 +60,18 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
     }
 
     public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, String... topics) {
-        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
+        LOG.info("AVROKAFKASPOUT: Creating AvroKafkaSpout for aeroloop_SensorReadingScalar topic\n");
+       return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withStringDeserializers();
+       //return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
     }
 
-    public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, Set<String> topics) {
-        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
-    }
-
-    public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, Pattern topics) {
-        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
-    }
+//    public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, Set<String> topics) {
+//        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
+//    } //TODO uncomment
+//
+//    public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, Pattern topics) {
+//        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
+//    }  //TODO uncomment
 
     public long getOffsetsCommitPeriodMs() {
         return this.offsetCommitPeriodMs;
@@ -208,18 +216,30 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
             this.metricsTimeBucketSizeInSecs = metricsTimeBucketSizeInSecs;
             return this;
         }
+//
+//        private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
+//            this.setProp("key.deserializer", StringDeserializer.class);
+//            this.setProp("value.deserializer", StringDeserializer.class);
+//            return this;
+//        } // Uncomment
 
-        private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
-            this.setProp("key.deserializer", StringDeserializer.class);
-            this.setProp("value.deserializer", StringDeserializer.class);
+//        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializer() {
+private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
+            this.setProp("key.deserializer", LongDeserializer.class.getName());
+            //Use Kafka Avro Deserializer.
+            this.setProp("value.deserializer", KafkaAvroDeserializer.class.getName());//<----------------------
+            //Use Specific Record or else you get Avro GenericRecord.
+           this.setProp("specific.avro.reader", "true");
+            //Schema registry location.
+            this.setProp(KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
+                    "http://eagle5.di.uoa.gr:8081"); //<----- Run Schema Registry on 8081
             return this;
         }
-
-        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializer() {
-            this.setProp("key.deserializer", CustomAvroDeserializer.class);
-            this.setProp("value.deserializer", CustomAvroDeserializer.class);
-            return this;
-        }
+//        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializer() {
+//            this.setProp("key.deserializer", CustomAvroDeserializer.class);
+//            this.setProp("value.deserializer", CustomAvroDeserializer.class);
+//            return this;
+//        } //TODO to be uncommented
 
         private AvroKafkaSpoutConfig.Builder<K, V> setKafkaPropsForProcessingGuarantee() {
             if (this.getKafkaProps().containsKey("enable.auto.commit")) {
