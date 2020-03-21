@@ -1,0 +1,35 @@
+Will we have parallelization in our example?
+Guess the answer is yes since we have lots of data.
+
+Dont care that much for reliability right? If yes:
+--> The tuples have to be processed right now, or else they lost their value.
+--> No need to guarantee that every message was processed. Most is enough!
+
+
+Esper CEP patterns to be used:
+1. Alerts and Thresholds
+2. Time Window Operations
+3. Joining Event Streams
+4. Detect Trends
+
+Topics to be used:
+a. aeroloop_SensorReadingScalar
+b. aeroloop_Voltage
+
+Local Cluster(?)
+
+/*Debugging Comments
+   1. java.lang.NoClassDefFound error:
+    Sto classpath yparxei mia class pou thn vlepoume sto compile (giafto kai xtizei kanonika)
+    alla oxi sto runtime. Sto classpath allaxthke to antistoixo mpedio ths sugkekrimenhs methdou
+    apo provided se compile.
+   2. Prosoxh den trexei mesa apo VPN
+   */
+
+  a. Exoume String Deserializer kai den paizei swsta gt alliws petaei exception. TO BE FIXED
+  b. above 3 comment is resolved. Kostis to veify
+  c. Check TODO comments to update the status
+  d. TO check parallelism
+  e. To check Sleep time as well as cluster.shutdown
+  f. cleanup pom file
+  g. Removing Christos Logs

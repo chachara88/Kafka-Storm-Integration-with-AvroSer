@@ -46,6 +46,8 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
     private final AvroKafkaSpoutConfig.ProcessingGuarantee processingGuarantee;
     private final boolean tupleTrackingEnforced;
     private final int metricsTimeBucketSizeInSecs;
+    private final boolean isSpecificTopic;
+
 
     public AvroKafkaSpoutConfig(AvroKafkaSpoutConfig.Builder<K, V> builder) {
         super(builder.setKafkaPropsForProcessingGuarantee());
@@ -57,11 +59,11 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
         this.processingGuarantee = builder.processingGuarantee;
         this.tupleTrackingEnforced = builder.tupleTrackingEnforced;
         this.metricsTimeBucketSizeInSecs = builder.metricsTimeBucketSizeInSecs;
+        this.isSpecificTopic = builder.isSpecificTopic;
     }
 
     public static AvroKafkaSpoutConfig.Builder<String, String> builder(String bootstrapServers, String... topics) {
-        LOG.info("AVROKAFKASPOUT: Creating AvroKafkaSpout for aeroloop_SensorReadingScalar topic\n");
-       return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withStringDeserializers();
+        return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withStringDeserializers(); //TODO Change the name of StringDeserializer
        //return (new AvroKafkaSpoutConfig.Builder(bootstrapServers, topics)).withCustomAvroDeserializer();
     }
 
@@ -128,6 +130,7 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
         private AvroKafkaSpoutConfig.ProcessingGuarantee processingGuarantee;
         private boolean tupleTrackingEnforced;
         private int metricsTimeBucketSizeInSecs;
+        private boolean isSpecificTopic = false;
 
         public Builder(String bootstrapServers, String... topics) {
             super(bootstrapServers, topics);
@@ -137,6 +140,13 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
             this.processingGuarantee = AvroKafkaSpoutConfig.DEFAULT_PROCESSING_GUARANTEE;
             this.tupleTrackingEnforced = false;
             this.metricsTimeBucketSizeInSecs = 60;
+            for (String topicName: topics) {
+                if (topicName.equals("aeroloop_SensorReadingScalar")) {
+                    LOG.error("ApacheStormMachine -->" + " TopicName is: " + topicName);
+                    this.isSpecificTopic = true;
+                    LOG.error("ApacheStormMachine -->" + " isSpecificTopic var is set up to true");
+                }
+            }
         }
 
         public Builder(String bootstrapServers, Set<String> topics) {
@@ -224,7 +234,7 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
 //        } // Uncomment
 
 //        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializer() {
-private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
+        private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
             this.setProp("key.deserializer", LongDeserializer.class.getName());
             //Use Kafka Avro Deserializer.
             this.setProp("value.deserializer", KafkaAvroDeserializer.class.getName());//<----------------------
@@ -265,6 +275,10 @@ private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
 
         public AvroKafkaSpoutConfig<K, V> build() {
             return new AvroKafkaSpoutConfig(this);
+        }
+
+        public boolean getSpecificTopic() {
+            return isSpecificTopic;
         }
     }
 

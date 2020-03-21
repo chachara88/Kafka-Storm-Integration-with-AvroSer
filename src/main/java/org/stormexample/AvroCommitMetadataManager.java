@@ -1,8 +1,4 @@
 package org.stormexample;
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by Fernflower decompiler)
-//
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -10,13 +6,12 @@ import java.io.IOException;
 import java.util.Map;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
 import org.apache.kafka.common.TopicPartition;
-//import org.apache.storm.kafka.spout.KafkaSpoutConfig.ProcessingGuarantee;
-import org.stormexample.AvroKafkaSpoutConfig.ProcessingGuarantee;
 import org.apache.storm.kafka.spout.internal.CommitMetadata;
 import org.apache.storm.kafka.spout.internal.OffsetManager;
 import org.apache.storm.task.TopologyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stormexample.AvroKafkaSpoutConfig.ProcessingGuarantee;
 
 public final class AvroCommitMetadataManager {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();

@@ -38,6 +38,8 @@ import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichSpout;
+import org.apache.storm.tuple.Fields;
+import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.AvroKafkaSpoutConfig.ProcessingGuarantee;
@@ -315,6 +317,7 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
             LOG.trace("Tuple for record [{}] has already been emitted. Skipping", record);
         } else {
             List<Object> tuple = this.avroKafkaSpoutConfig.getTranslator().apply(record);
+
             if (this.isEmitTuple(tuple)) {
                 boolean isScheduled = this.retryService.isScheduled(msgId);
                 if (!isScheduled || this.retryService.isReady(msgId)) {
@@ -322,10 +325,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                     if (!this.isAtLeastOnceProcessing()) {
                         if (this.avroKafkaSpoutConfig.isTupleTrackingEnforced()) {
                             this.collector.emit(stream, tuple, msgId);
-                            LOG.trace("Emitted tuple [{}] for record [{}] with msgId [{}]", new Object[]{tuple, record, msgId});
                         } else {
                             this.collector.emit(stream, tuple);
-                            LOG.trace("Emitted tuple [{}] for record [{}]", tuple, record);
                         }
                     } else {
                         this.emitted.add(msgId);
@@ -334,9 +335,14 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                             this.retryService.remove(msgId);
                         }
 
-                        this.collector.emit(stream, tuple, msgId);
+                        this.collector.emit(stream, tuple, msgId); //TODO delete Christos
+
+//                        this.collector.emit("TemperatureStream", new Values("TemperatureValue")/*, msgId TODO */);
+//                        this.collector.emit("PressureStream", new Values("PressureValue")/*, msgId TODO*/);
                         this.tupleListener.onEmit(tuple, msgId);
-                        LOG.trace("Emitted tuple [{}] for record [{}] with msgId [{}]", new Object[]{tuple, record, msgId});
+                        LOG.error("ApacheStormMachine --> The stream is [{}]", stream);
+                        LOG.error("ApacheStormMachine --> The Tuple is [{}]", tuple);
+                        LOG.error("ApacheStormMachine --> The Emitted tuple [{}] for record [{}] with msgId [{}]", new Object[]{tuple, record, msgId});
                     }
 
                     return true;
@@ -512,12 +518,9 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
         RecordTranslator<K, V> translator = this.avroKafkaSpoutConfig.getTranslator();
         Iterator var3 = translator.streams().iterator();
-
         while(var3.hasNext()) {
             String stream = (String)var3.next();
             declarer.declareStream(stream, translator.getFieldsFor(stream));
-            /*TODO To be adapted so as different streams to be sent ot different bolts
-            * For specific topics where 2 variables needs to be calculated*/
         }
 
     }

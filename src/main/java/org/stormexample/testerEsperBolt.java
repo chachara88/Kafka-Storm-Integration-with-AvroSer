@@ -27,20 +27,14 @@ public class testerEsperBolt implements IBasicBolt {
 
     @Override
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
-        LOG.error("Christos Emitted tuple IN BOLT  is: [{}]", tuple);
+        LOG.error("ApacheStormMachine --> Emitted tuple IN BOLT  is: [{}]", tuple);
         tuple.getFields();
         if (tuple.contains("value")){
             String part = tuple.toString();
             String[] parts = part.split(" ");
-//            for (String s: parts) {
-//                //Do your stuff here
-//                LOG.error("Christos to part[1] einai" +  s);
-//            } //TODO to be cleared
-            LOG.error("Christos to value einai" +  parts[18]);
+            //part[18] is referring to actual Value!
             basicOutputCollector.emit(new Values(parts[18]));
         }
-//
-
     }
 
     @Override
