@@ -1,15 +1,14 @@
 package org.stormexample;
-import com.esotericsoftware.minlog.Log;
-import com.variacode.cep.storm.esper.EsperBolt;
 import org.apache.storm.Config;
 import org.apache.storm.LocalCluster;
 import org.apache.storm.generated.Bolt;
-import org.apache.storm.generated.StormTopology;
+import org.apache.storm.mongodb.bolt.MongoInsertBolt;
+import org.apache.storm.mongodb.common.mapper.MongoMapper;
+import org.apache.storm.mongodb.common.mapper.SimpleMongoMapper;
 import org.apache.storm.topology.TopologyBuilder;
 import org.apache.storm.utils.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import java.util.*;
 
 
 public class simplestormTopology {
@@ -39,7 +38,7 @@ public class simplestormTopology {
                 .setMaxUncommittedOffsets(259)
                 .build());
 
-        //Setting Spouts to the topology
+//        Setting Spouts to the topology
         LOG.info("ApacheStormMachine --> Setting SensorReadingSpout to the topology\n");
         topologyBuilder.setSpout("SensorReadingSpout",SensorReadingKafkaSpout/*, 2*/); //TODO increase num of parallelism?
 
@@ -48,15 +47,39 @@ public class simplestormTopology {
 
         //Setting the Bolts into the topology
         LOG.info("ApacheStormMachine --> Setting tester Bolt to the topology\n");
-        topologyBuilder.setBolt("testerBoltA", new testerEsperBolt(), 2)
-                .shuffleGrouping("VoltageSpout"/*,"TemperatureStream"*/);
+        topologyBuilder.setBolt("simpleVoltageBolt", new SimpleVoltageBolt()/*, 2*/)
+                .shuffleGrouping("VoltageSpout");
+
+        topologyBuilder.setBolt("SimpleEsperVoltageValueBolt", new MonitorValueBolt()/*,2*/)
+                 .shuffleGrouping("simpleVoltageBolt");
+
 
         LOG.info("ApacheStormMachine --> Setting sourceModuleExtractor Bolt to the topology\n");
         topologyBuilder.setBolt("sourceModuleExtractor", new SourceModuleExtractor(), 2)
                 .shuffleGrouping("SensorReadingSpout");
 
+        //Has to be set up in next Esper Bolt
+        //                .fieldsGrouping("TemperatureStream", new Fields("TemperatureValue"))
+        //                .fieldsGrouping("PressureStream", new Fields("PressureValue"));
+
+
+        // Create MongoMapper
+        LOG.info("ApacheStormMachine --> Creating Voltage and Sensor Mongo Mappers \n");
+        MongoMapper voltageMapper = new SimpleMongoMapper();
+               // .withFields("topic","partition","offset","key","value"); //TODO Remove Comments
+        MongoMapper sensorMapper = new SimpleMongoMapper();
+               // .withFields("topic","partition","offset","key","value"); //TODO Remove Comments
+
+        LOG.info("ApacheStormMachine --> Setting MongoDataPersistence Bolts to the topology\n");
+        LOG.info("ApacheStormMachine --> MongoDBVoltageDataPersistence Bolt Details are:" + "\nURL:" + "mongodb://127.0.0.1:27017/aeroloopVolt" + "\nCollectionName:" + "VoltageTuples\n" );
+        topologyBuilder.setBolt("MongoDBVoltageDataPersistence", new MongoInsertBolt( " mongodb://127.0.0.1:27017/aeroloopVolt"," VoltageTuples", voltageMapper))
+                .shuffleGrouping("VoltageSpout");
+        LOG.info("ApacheStormMachine --> MongoDBSensorDataPersistence Bolt Details are:" + "\nURL:" + "mongodb://127.0.0.1:27017/aeroloopSens" + "\nCollectionName:" + "SensorTuples\n" );
+        topologyBuilder.setBolt("MongoDBSensorDataPersistence", new MongoInsertBolt(" mongodb://127.0.0.1:27017/aeroloopSens", " SensorTuples", sensorMapper))
+                .shuffleGrouping("SensorReadingSpout");
+
         LocalCluster cluster = new LocalCluster();
-        cluster.submitTopology("LogAnalyserStorm", config, topologyBuilder.createTopology()); //TODO to change topologyName
+        cluster.submitTopology("Esper-Storm_with_MONGODB_Persistence_Topology", config, topologyBuilder.createTopology()); //TODO to change topologyName
 //        Thread.sleep(300000);
         Utils.sleep(600000);
 
