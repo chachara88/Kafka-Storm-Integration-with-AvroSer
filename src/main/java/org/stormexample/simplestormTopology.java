@@ -71,11 +71,11 @@ public class simplestormTopology {
                // .withFields("topic","partition","offset","key","value"); //TODO Remove Comments
 
         LOG.info("ApacheStormMachine --> Setting MongoDataPersistence Bolts to the topology\n");
-        LOG.info("ApacheStormMachine --> MongoDBVoltageDataPersistence Bolt Details are:" + "\nURL:" + "mongodb://127.0.0.1:27017/aeroloopVolt" + "\nCollectionName:" + "VoltageTuples\n" );
-        topologyBuilder.setBolt("MongoDBVoltageDataPersistence", new MongoInsertBolt( " mongodb://127.0.0.1:27017/aeroloopVolt"," VoltageTuples", voltageMapper))
+        LOG.info("ApacheStormMachine --> MongoDBVoltageDataPersistence Bolt Details are:" + "\nURL:" + " mongodb://127.0.0.1:27017/aeroloopVolt" + "\nCollectionName:" + "VoltageTuples\n" );
+        topologyBuilder.setBolt("MongoDBVoltageDataPersistence", new MongoInsertBolt( "mongodb://127.0.0.1:27017/aeroloopVolt"," VoltageTuples", voltageMapper))
                 .shuffleGrouping("VoltageSpout");
-        LOG.info("ApacheStormMachine --> MongoDBSensorDataPersistence Bolt Details are:" + "\nURL:" + "mongodb://127.0.0.1:27017/aeroloopSens" + "\nCollectionName:" + "SensorTuples\n" );
-        topologyBuilder.setBolt("MongoDBSensorDataPersistence", new MongoInsertBolt(" mongodb://127.0.0.1:27017/aeroloopSens", " SensorTuples", sensorMapper))
+        LOG.info("ApacheStormMachine --> MongoDBSensorDataPersistence Bolt Details are:" + "\nURL:" + " mongodb://127.0.0.1:27017/aeroloopSens" + "\nCollectionName:" + "SensorTuples\n" );
+        topologyBuilder.setBolt("MongoDBSensorDataPersistence", new MongoInsertBolt("mongodb://127.0.0.1:27017/aeroloopSens", " SensorTuples", sensorMapper))
                 .shuffleGrouping("SensorReadingSpout");
 
         LocalCluster cluster = new LocalCluster();

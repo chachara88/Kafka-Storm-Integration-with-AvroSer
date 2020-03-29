@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class testerEsperBolt implements IBasicBolt {
+public class SimpleVoltageBolt implements IBasicBolt {
         private static final Logger LOG = LoggerFactory.getLogger(AvroKafkaSpout.class);
-        public testerEsperBolt(){}
+        public SimpleVoltageBolt(){}
 
     @Override
     public void prepare(Map<String, Object> map, TopologyContext topologyContext) {
@@ -31,9 +31,9 @@ public class testerEsperBolt implements IBasicBolt {
         tuple.getFields();
         if (tuple.contains("value")){
             String part = tuple.toString();
-            String[] parts = part.split(" ");
-            //part[18] is referring to actual Value!
-            basicOutputCollector.emit(new Values(parts[18]));
+            String extracted = part.substring(/*tuple.toString()*/part.indexOf("\"value"),/*tuple.toString()*/part.lastIndexOf('}')); //TODO to be cleared
+            //TODO replcae by reg expr
+            basicOutputCollector.emit(new Values(extracted));
         }
     }
 

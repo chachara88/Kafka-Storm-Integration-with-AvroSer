@@ -37,6 +37,7 @@ public class SourceModuleExtractor implements IBasicBolt {
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         LOG.error("ApacheStormMachine --> Emitted tuple IN source module extractor BOLT  is: [{}]", tuple);
         tuple.getFields();
+    /*TODO needs to be more sophisticated :)*/
         if (tuple.contains("value")) {
             String part = tuple.toString();
             String[] parts = part.split(" ");
@@ -52,6 +53,7 @@ public class SourceModuleExtractor implements IBasicBolt {
                 basicOutputCollector.emit(new Values(parts[18])); //TODO Special case. It should be handled, despite that it is not expected in our scenario.
             }
         }
+
     }
 
     @Override

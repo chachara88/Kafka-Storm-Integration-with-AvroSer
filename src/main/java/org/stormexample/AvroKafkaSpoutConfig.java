@@ -226,14 +226,7 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
             this.metricsTimeBucketSizeInSecs = metricsTimeBucketSizeInSecs;
             return this;
         }
-//
-//        private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
-//            this.setProp("key.deserializer", StringDeserializer.class);
-//            this.setProp("value.deserializer", StringDeserializer.class);
-//            return this;
-//        } // Uncomment
 
-//        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializer() {
         private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
             this.setProp("key.deserializer", LongDeserializer.class.getName());
             //Use Kafka Avro Deserializer.
@@ -245,11 +238,12 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
                     "http://eagle5.di.uoa.gr:8081"); //<----- Run Schema Registry on 8081
             return this;
         }
-//        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializer() {
-//            this.setProp("key.deserializer", CustomAvroDeserializer.class);
-//            this.setProp("value.deserializer", CustomAvroDeserializer.class);
-//            return this;
-//        } //TODO to be uncommented
+
+        private AvroKafkaSpoutConfig.Builder<K, V> withCustomAvroDeserializers() {
+            this.setProp("key.deserializer", CustomAvroDeserializer.class);
+            this.setProp("value.deserializer", CustomAvroDeserializer.class);
+            return this;
+        } //TODO to be uncommented
 
         private AvroKafkaSpoutConfig.Builder<K, V> setKafkaPropsForProcessingGuarantee() {
             if (this.getKafkaProps().containsKey("enable.auto.commit")) {
