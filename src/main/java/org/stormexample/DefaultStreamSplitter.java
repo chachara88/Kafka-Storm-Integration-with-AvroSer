@@ -6,7 +6,6 @@ import org.apache.storm.topology.IBasicBolt;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Fields;
 import org.apache.storm.tuple.Tuple;
-import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,9 +14,9 @@ import java.util.Map;
 /**
  *
  */
-public class SourceModuleExtractor implements IBasicBolt {
-        private static final Logger LOG = LoggerFactory.getLogger(AvroKafkaSpout.class);
-        public SourceModuleExtractor(){}
+public class DefaultStreamSplitter implements IBasicBolt {
+        private static final Logger LOG = LoggerFactory.getLogger(DefaultStreamSplitter.class);
+        public DefaultStreamSplitter(){}
 
     @Override
     public void prepare(Map<String, Object> map, TopologyContext topologyContext) {
@@ -37,23 +36,23 @@ public class SourceModuleExtractor implements IBasicBolt {
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
         LOG.error("ApacheStormMachine --> Emitted tuple IN source module extractor BOLT  is: [{}]", tuple);
         tuple.getFields();
-    /*TODO needs to be more sophisticated :)*/
-        if (tuple.contains("value")) {
+        String streamId = "";
+        if (tuple.contains("value")) {  /*TODO needs to be more sophisticated :)*/
             String part = tuple.toString();
             String[] parts = part.split(" ");
-            //parts[14] is the sourceModule
+            /*parts[14] is the sourceModule && parts[18] is variables value*/
             //TODO a seperate function fro logic below
             if (parts[14].contains("BAROMETER-TEMPERATURE")) {
                 LOG.error("ApacheStormMachine --> Temperature Value will be redirected in TemperatureStream id"); //TODO
-                basicOutputCollector.emit("TemperatureStream", new Values(parts[18]));
+                streamId = "TemperatureStream";
             } else if (parts[14].contains("BAROMETER-PRESSURE")) {
                 LOG.error("ApacheStormMachine --> Pressure Value will be redirected in PressureStream id"); //TODO
-                basicOutputCollector.emit("PressureStream", new Values(parts[18]));
-            } else {
-                basicOutputCollector.emit(new Values(parts[18])); //TODO Special case. It should be handled, despite that it is not expected in our scenario.
-            }
+                streamId = "PressureStream";
+            }/*else{
+            TODO special handling is needed. Throw an exception?
+            }*/
+            basicOutputCollector.emit(streamId, tuple.getValues());
         }
-
     }
 
     @Override
@@ -66,9 +65,18 @@ public class SourceModuleExtractor implements IBasicBolt {
      */
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declareStream("TemperatureStream", new Fields("TemperatureValue") );
-        outputFieldsDeclarer.declareStream("PressureStream", new Fields("PressureValue") );
+        /*Break the default stream into two seperate ones based on variable
+        * The two new streams are:
+        * i.  TemperatureStream
+        * ii. PressureStream
+        * The tuple schema will still remain the same as in teh default.
+        * TODO this has to be changed so as to avoid extra manipulation in the next bolt
+        * */
+        Fields schema = new Fields("topic","partition", "offset", "key", "value");
+        outputFieldsDeclarer.declareStream("TemperatureStream", schema );
+        outputFieldsDeclarer.declareStream("PressureStream", schema );
     }
+
 
     @Override
     public Map<String, Object> getComponentConfiguration() {

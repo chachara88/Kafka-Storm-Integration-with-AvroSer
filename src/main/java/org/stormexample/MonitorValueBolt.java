@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 
 public class MonitorValueBolt implements IBasicBolt {
-    private static final Logger LOG = LoggerFactory.getLogger(AvroKafkaSpout.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MonitorValueBolt.class);
     private static final long serialVersionUID = 2L;
     private EsperMonitorValueOperation esperOperation;
 

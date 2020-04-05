@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
-public class SimpleVoltageBolt implements IBasicBolt {
-        private static final Logger LOG = LoggerFactory.getLogger(AvroKafkaSpout.class);
-        public SimpleVoltageBolt(){}
+public class ValueExtractorBolt implements IBasicBolt {
+        private static final Logger LOG = LoggerFactory.getLogger(ValueExtractorBolt.class);
+        public ValueExtractorBolt(){}
 
     @Override
     public void prepare(Map<String, Object> map, TopologyContext topologyContext) {
@@ -33,7 +33,7 @@ public class SimpleVoltageBolt implements IBasicBolt {
             String part = tuple.toString();
             String extracted = part.substring(/*tuple.toString()*/part.indexOf("\"value"),/*tuple.toString()*/part.lastIndexOf('}')); //TODO to be cleared
             //TODO replcae by reg expr
-            basicOutputCollector.emit(new Values(extracted));
+            basicOutputCollector.emit(new Values(extracted)); //TODO BE changed!
         }
     }
 
@@ -44,7 +44,7 @@ public class SimpleVoltageBolt implements IBasicBolt {
 
     @Override
     public void declareOutputFields(OutputFieldsDeclarer outputFieldsDeclarer) {
-        outputFieldsDeclarer.declare(new Fields("VoltageValue"));
+        outputFieldsDeclarer.declare(new Fields("ExtractedValue"));
     }
 
     @Override

@@ -9,16 +9,16 @@ public class EsperMonitorValueOperation {
     private EPRuntime cepRT = null;
     public EsperMonitorValueOperation() {
         Configuration cepConfig = new Configuration();
-        cepConfig.addEventType("VoltageValue", Tuple.class.getName());
+        cepConfig.addEventType("VariableValue", Tuple.class.getName());
         EPServiceProvider cep = EPServiceProviderManager.getProvider(
                 "ApacheStormCEPEngine", cepConfig);
         cepRT = cep.getEPRuntime();
 
         EPAdministrator cepAdm = cep.getEPAdministrator();
         EPStatement cepStatement = cepAdm
-                .createEPL(""); /*TODO To be filled with Esper Query*/
+                .createEPL("select * from" + " VariableValue.win:time_batch(5 sec)"); /*TODO To be filled with Esper Query*/
 
-        cepStatement.addListener(new EsperTimeWindowOperation.CEPListener());
+        cepStatement.addListener(new /*EsperTimeWindowOperation.*/CEPListener());
     }
 
     public static class CEPListener implements UpdateListener {
