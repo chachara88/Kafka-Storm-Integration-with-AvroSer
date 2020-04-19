@@ -9,6 +9,7 @@ import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.util.Map;
 
 /**
@@ -48,9 +49,11 @@ public class DefaultStreamSplitter implements IBasicBolt {
             } else if (parts[14].contains("BAROMETER-PRESSURE")) {
                 LOG.error("ApacheStormMachine --> Pressure Value will be redirected in PressureStream id"); //TODO
                 streamId = "PressureStream";
-            }/*else{
-            TODO special handling is needed. Throw an exception?
-            }*/
+            }
+            else{
+            //TODO special handling is needed. Throw an exception?
+                LOG.error("ApacheStormMachine --> There is NO Temperature or Pressure Stream"); //TODO
+            }
             basicOutputCollector.emit(streamId, tuple.getValues());
         }
     }

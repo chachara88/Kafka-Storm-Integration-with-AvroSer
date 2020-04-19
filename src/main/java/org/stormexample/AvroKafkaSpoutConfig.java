@@ -12,7 +12,7 @@ import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
-import org.apache.kafka.common.serialization.StringDeserializer;
+import org.apache.kafka.common.serialization.*;
 import org.apache.storm.annotation.InterfaceStability.Unstable;
 import org.apache.storm.kafka.spout.EmptyKafkaTupleListener;
 import org.apache.storm.kafka.spout.KafkaSpoutRetryExponentialBackoff;
@@ -25,8 +25,6 @@ import org.apache.storm.kafka.spout.subscription.TopicFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
-
-import org.apache.kafka.common.serialization.LongDeserializer;
 
 public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
     private static final long serialVersionUID = 141902646130682494L;
@@ -228,7 +226,7 @@ public class AvroKafkaSpoutConfig<K, V> extends CommonKafkaSpoutConfig<K, V> {
         }
 
         private AvroKafkaSpoutConfig.Builder<K, V> withStringDeserializers() {
-            this.setProp("key.deserializer", LongDeserializer.class.getName());
+            this.setProp("key.deserializer", /*LongDeserializer*/ByteArrayDeserializer.class.getName());
             //Use Kafka Avro Deserializer.
             this.setProp("value.deserializer", KafkaAvroDeserializer.class.getName());//<----------------------
             //Use Specific Record or else you get Avro GenericRecord.
