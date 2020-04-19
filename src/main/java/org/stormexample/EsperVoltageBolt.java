@@ -8,7 +8,9 @@ import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.LocalTime;
 import java.util.Map;
+
 
 public class EsperVoltageBolt implements IBasicBolt {
     private static final Logger LOG = LoggerFactory.getLogger(EsperVoltageBolt.class);
@@ -26,17 +28,18 @@ public class EsperVoltageBolt implements IBasicBolt {
         LOG.info("ApacheStormMachine --> ### To size twn fields einai: "+x );
         String part = input.toString();
         String[] parts = part.split(" ");
-        int i =0;
-        for(String s: parts) {
-            LOG.info("ApacheStormMachine --> ### To part[" + i +"] einai " + s);
-            i++;
+        if(parts[7] != null){
+            try {
+                LOG.info("ApacheStormMachine --> String will be formatted!");
+                String stringValue = parts[7].substring(0,parts[7].length() - 1); //Trim last character (comma in our case)
+                TemperatureEvent temperatureEvent = new TemperatureEvent(Double.parseDouble(stringValue.trim()),LocalTime.now());
+                esperOperation.esperPut(temperatureEvent);
+            }catch(NumberFormatException ex){
+                LOG.error("ApacheStormMachine --> Invalid string!! Please use a  well-formatted string :)");
+            }
+        }else{
+            LOG.info("ApacheStormMachine --> String is null!!!");
         }
-//        double price = input.getDoubleByField("price");
-//        long timeStamp = input.getLongByField("timestamp");
-//        //long timeStamp = System.currentTimeMillis();
-//        String product = input.getStringByField("product");
-//        Tuple stock = new Stock(product, price, timeStamp);
-//        esperOperation.esperPut(stock);
     }
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
