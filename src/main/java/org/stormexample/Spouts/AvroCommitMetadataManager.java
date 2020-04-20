@@ -1,4 +1,4 @@
-package org.stormexample;
+package org.stormexample.Spouts;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,7 +11,7 @@ import org.apache.storm.kafka.spout.internal.OffsetManager;
 import org.apache.storm.task.TopologyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stormexample.AvroKafkaSpoutConfig.ProcessingGuarantee;
+import org.stormexample.Spouts.AvroKafkaSpoutConfig.ProcessingGuarantee;
 
 public final class AvroCommitMetadataManager {
     private static final ObjectMapper JSON_MAPPER = new ObjectMapper();

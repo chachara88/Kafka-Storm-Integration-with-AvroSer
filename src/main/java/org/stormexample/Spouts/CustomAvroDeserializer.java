@@ -1,4 +1,4 @@
-package org.stormexample;
+package org.stormexample.Spouts;
 
 import org.apache.avro.file.DataFileReader;
 import org.apache.avro.io.DatumReader;

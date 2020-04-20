@@ -1,14 +1,9 @@
-package org.stormexample;
+package org.stormexample.EsperOperations;
 
-import com.esotericsoftware.minlog.Log;
 import com.espertech.esper.client.*;
-import org.apache.storm.tuple.Tuple;
-import org.checkerframework.checker.units.qual.Temperature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stormexample.StatementSubscriber;
-
-import java.util.Random;
+import org.stormexample.Events.TemperatureEvent;
 
 public class EsperMonitorValueOperation {
     private static final Logger LOG = LoggerFactory.getLogger(EsperMonitorValueOperation.class);

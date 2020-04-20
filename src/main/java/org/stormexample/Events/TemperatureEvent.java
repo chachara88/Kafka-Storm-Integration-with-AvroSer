@@ -1,4 +1,4 @@
-package org.stormexample;
+package org.stormexample.Events;
 
 import java.time.LocalTime;
 import java.util.Date;

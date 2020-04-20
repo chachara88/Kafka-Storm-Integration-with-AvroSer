@@ -1,4 +1,4 @@
-package org.stormexample;
+package org.stormexample.Bolts;
 
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.BasicOutputCollector;

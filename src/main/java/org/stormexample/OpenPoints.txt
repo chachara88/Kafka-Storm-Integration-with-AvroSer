@@ -33,3 +33,9 @@ Local Cluster(?)
   e. To check Sleep time as well as cluster.shutdown
   f. cleanup pom file
   g. Removing Christos Logs
+  h. TODO Comments
+  i. Appropriate logging
+  j. pom xml cleanup
+  k. Na llaksoume ta onomata twn serializers! :)
+  l. https://github.com/adrianmilne/esper-demo-nuclear/tree/master/src/main/java/com/cor/cep
+  m. clear ApacheStormMachine --> comments

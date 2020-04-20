@@ -3,7 +3,7 @@
 // (powered by Fernflower decompiler)
 //
 
-package org.stormexample;
+package org.stormexample.Spouts;
 
 import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
@@ -38,11 +38,9 @@ import org.apache.storm.spout.SpoutOutputCollector;
 import org.apache.storm.task.TopologyContext;
 import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.topology.base.BaseRichSpout;
-import org.apache.storm.tuple.Fields;
-import org.apache.storm.tuple.Values;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stormexample.AvroKafkaSpoutConfig.ProcessingGuarantee;
+import org.stormexample.Spouts.AvroKafkaSpoutConfig.ProcessingGuarantee;
 
 public class AvroKafkaSpout<K, V> extends BaseRichSpout {
     private static final long serialVersionUID = 4151921085047987154L;
