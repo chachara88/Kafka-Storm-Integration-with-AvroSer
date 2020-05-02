@@ -19,6 +19,9 @@ public class TemperatureEvent {
      * @param temperature Temperature in Celsius
      * @param timeOfReading Time of Reading
      */
+    public TemperatureEvent(){
+    }
+
     public TemperatureEvent(double temperature, LocalTime timeOfReading) {
         this.temperature = temperature;
         this.timeOfReading = timeOfReading;
