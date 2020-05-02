@@ -27,13 +27,12 @@ public class ValueExtractorBolt implements IBasicBolt {
 
     @Override
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
-        LOG.error("ApacheStormMachine --> Emitted tuple IN BOLT  is: [{}]", tuple);
+        LOG.info("ApacheStormMachine --> Emitted tuple in BOLT  is: [{}]", tuple);
         tuple.getFields();
         if (tuple.contains("value")){
             String part = tuple.toString();
-            String extracted = part.substring(/*tuple.toString()*/part.indexOf("\"value"),/*tuple.toString()*/part.lastIndexOf('}')); //TODO to be cleared
-            //TODO replcae by reg expr
-            basicOutputCollector.emit(new Values(extracted)); //TODO BE changed!
+            String extracted = part.substring(part.indexOf("\"value"),part.lastIndexOf('}'));
+            basicOutputCollector.emit(new Values(extracted));
         }
     }
 

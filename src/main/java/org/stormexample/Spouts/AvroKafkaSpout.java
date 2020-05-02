@@ -333,14 +333,9 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                             this.retryService.remove(msgId);
                         }
 
-                        this.collector.emit(stream, tuple, msgId); //TODO delete Christos
-
-//                        this.collector.emit("TemperatureStream", new Values("TemperatureValue")/*, msgId TODO */);
-//                        this.collector.emit("PressureStream", new Values("PressureValue")/*, msgId TODO*/);
+                        this.collector.emit(stream, tuple, msgId);
                         this.tupleListener.onEmit(tuple, msgId);
-                        LOG.error("ApacheStormMachine --> The stream is [{}]", stream);
-                        LOG.error("ApacheStormMachine --> The Tuple is [{}]", tuple);
-                        LOG.error("ApacheStormMachine --> The Emitted tuple [{}] for record [{}] with msgId [{}]", new Object[]{tuple, record, msgId});
+                        LOG.info("ApacheStormMachine --> The Emitted tuple [{}] for record [{}] with msgId [{}]", new Object[]{tuple, record, msgId});
                     }
 
                     return true;

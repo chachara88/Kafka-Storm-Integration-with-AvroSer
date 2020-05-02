@@ -34,32 +34,33 @@ public class DefaultStreamSplitter implements IBasicBolt {
     @Override
 
     public void execute(Tuple tuple, BasicOutputCollector basicOutputCollector) {
-        LOG.error("ApacheStormMachine --> Emitted tuple IN source module extractor BOLT  is: [{}]", tuple);
+        LOG.info("ApacheStormMachine --> Emitted tuple in stream splitter BOLT  is: [{}]", tuple);
         tuple.getFields();
-        String streamId = "";
-        if (tuple.contains("value")) {  /*TODO needs to be more sophisticated :)*/
+        if (tuple.contains("value")) {
             String part = tuple.toString();
             String[] parts = part.split(" ");
-            /*parts[14] is the sourceModule && parts[18] is variables value*/
-            //TODO a seperate function fro logic below
-            if (parts[14].contains("BAROMETER-TEMPERATURE")) {
-                LOG.error("ApacheStormMachine --> Temperature Value will be redirected in TemperatureStream id"); //TODO
-                streamId = "TemperatureStream";
-            } else if (parts[14].contains("BAROMETER-PRESSURE")) {
-                LOG.error("ApacheStormMachine --> Pressure Value will be redirected in PressureStream id"); //TODO
-                streamId = "PressureStream";
-            }
-            else{
-            //TODO special handling is needed. Throw an exception?
-                LOG.error("ApacheStormMachine --> There is NO Temperature or Pressure Stream"); //TODO
-            }
+            String streamId = redirectoToSpecificStream(parts);
             basicOutputCollector.emit(streamId, tuple.getValues());
         }
     }
 
     @Override
     public void cleanup() {
+    }
 
+    private String redirectoToSpecificStream(String[] tupleParts){
+        /*parts[14] is the sourceModule && parts[18] is variables value*/
+        if (tupleParts[14].contains("BAROMETER-TEMPERATURE")) {
+            LOG.warn("ApacheStormMachine --> Temperature tuple (value) will be redirected in TemperatureStream");
+            return "TemperatureStream";
+        } else if (tupleParts[14].contains("BAROMETER-PRESSURE")) {
+            LOG.warn("ApacheStormMachine --> Pressure tuple (value) will be redirected in PressureStream ");
+            return  "PressureStream";
+        }
+        else{
+            LOG.error("ApacheStormMachine --> There is NO Temperature or Pressure Stream");
+            return "";
+        }
     }
 
     /**
@@ -71,8 +72,7 @@ public class DefaultStreamSplitter implements IBasicBolt {
         * The two new streams are:
         * i.  TemperatureStream
         * ii. PressureStream
-        * The tuple schema will still remain the same as in teh default.
-        * TODO this has to be changed so as to avoid extra manipulation in the next bolt
+        * The tuple schema will still remain the same as in the default.
         * */
         Fields schema = new Fields("topic","partition", "offset", "key", "value");
         outputFieldsDeclarer.declareStream("TemperatureStream", schema );
