@@ -7,11 +7,8 @@ import org.apache.storm.topology.OutputFieldsDeclarer;
 import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stormexample.EsperOperations.TemperatureEsperOperation;
 import org.stormexample.EsperOperations.VoltageEsperOperation;
 import org.stormexample.EsperStormTopology;
-import org.stormexample.Events.PressureEvent;
-import org.stormexample.Events.TemperatureEvent;
 import org.stormexample.Events.VoltageEvent;
 
 import java.time.LocalTime;

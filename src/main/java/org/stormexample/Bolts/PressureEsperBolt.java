@@ -8,11 +8,8 @@ import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperOperations.PressureEsperOperation;
-import org.stormexample.EsperOperations.TemperatureEsperOperation;
 import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.PressureEvent;
-
-import javax.management.Query;
 import java.time.LocalTime;
 import java.util.Map;
 
@@ -22,6 +19,7 @@ public class PressureEsperBolt implements IBasicBolt {
     private static final long serialVersionUID = 2L;
     private PressureEsperOperation esperOperation;
     private EsperStormTopology.Query EventQuery;
+
     public PressureEsperBolt() {
     }
 

@@ -3,13 +3,9 @@ package org.stormexample.EsperOperations;
 import com.espertech.esper.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stormexample.Bolts.PressureEsperBolt;
 import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.PressureEvent;
-import org.stormexample.Events.TemperatureEvent;
-import org.stormexample.Events.VoltageEvent;
 
-import javax.management.Query;
 
 public class PressureEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(PressureEsperOperation.class);

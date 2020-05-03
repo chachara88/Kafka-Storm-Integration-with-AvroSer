@@ -3,8 +3,6 @@ package org.stormexample.EsperOperations;
 import com.espertech.esper.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.stormexample.Bolts.PressureEsperBolt;
-import org.stormexample.Bolts.TemperatureEsperBolt;
 import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.TemperatureEvent;
 

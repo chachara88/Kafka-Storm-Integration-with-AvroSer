@@ -9,10 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperOperations.TemperatureEsperOperation;
 import org.stormexample.EsperStormTopology;
-import org.stormexample.Events.PressureEvent;
 import org.stormexample.Events.TemperatureEvent;
-import org.stormexample.Events.VoltageEvent;
-
 import java.time.LocalTime;
 import java.util.Map;
 
