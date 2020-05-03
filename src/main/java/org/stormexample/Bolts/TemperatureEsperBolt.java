@@ -8,6 +8,7 @@ import org.apache.storm.tuple.Tuple;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperOperations.TemperatureEsperOperation;
+import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.PressureEvent;
 import org.stormexample.Events.TemperatureEvent;
 import org.stormexample.Events.VoltageEvent;
@@ -20,8 +21,13 @@ public class TemperatureEsperBolt implements IBasicBolt {
     private static final Logger LOG = LoggerFactory.getLogger(TemperatureEsperBolt.class);
     private static final long serialVersionUID = 2L;
     private TemperatureEsperOperation esperOperation;
+    private EsperStormTopology.Query eventQuery;
 
     public TemperatureEsperBolt() {
+    }
+
+    public TemperatureEsperBolt(EsperStormTopology.Query query) {
+        this.eventQuery=query;
     }
 
     public void execute(Tuple input, BasicOutputCollector collector) {
@@ -54,7 +60,7 @@ public class TemperatureEsperBolt implements IBasicBolt {
 
     public void prepare(Map stormConf, TopologyContext context) {
         try {
-            esperOperation = new TemperatureEsperOperation();
+            esperOperation = new TemperatureEsperOperation(eventQuery);
         } catch (Exception e) {
             throw new RuntimeException();
         }

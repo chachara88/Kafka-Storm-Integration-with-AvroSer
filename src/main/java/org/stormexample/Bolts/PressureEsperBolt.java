@@ -9,8 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperOperations.PressureEsperOperation;
 import org.stormexample.EsperOperations.TemperatureEsperOperation;
+import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.PressureEvent;
 
+import javax.management.Query;
 import java.time.LocalTime;
 import java.util.Map;
 
@@ -18,9 +20,13 @@ import java.util.Map;
 public class PressureEsperBolt implements IBasicBolt {
     private static final Logger LOG = LoggerFactory.getLogger(PressureEsperBolt.class);
     private static final long serialVersionUID = 2L;
-    private static String tempEventTypeName;
     private PressureEsperOperation esperOperation;
+    private EsperStormTopology.Query EventQuery;
     public PressureEsperBolt() {
+    }
+
+    public PressureEsperBolt(EsperStormTopology.Query query) {
+        this.EventQuery = query;
     }
 
     public void execute(Tuple input, BasicOutputCollector collector) {
@@ -53,7 +59,7 @@ public class PressureEsperBolt implements IBasicBolt {
 
     public void prepare(Map stormConf, TopologyContext context) {
         try {
-            esperOperation = new PressureEsperOperation();
+            esperOperation = new PressureEsperOperation(EventQuery);
         } catch (Exception e) {
             throw new RuntimeException();
         }

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperOperations.TemperatureEsperOperation;
 import org.stormexample.EsperOperations.VoltageEsperOperation;
+import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.PressureEvent;
 import org.stormexample.Events.TemperatureEvent;
 import org.stormexample.Events.VoltageEvent;
@@ -21,10 +22,14 @@ public class VoltageEsperBolt implements IBasicBolt {
     private static final Logger LOG = LoggerFactory.getLogger(VoltageEsperBolt.class);
     private static final long serialVersionUID = 2L;
     private VoltageEsperOperation esperOperation;
+    private EsperStormTopology.Query eventQuery;
 
     public VoltageEsperBolt() {
     }
 
+    public VoltageEsperBolt(EsperStormTopology.Query query) {
+        this.eventQuery = query;
+    }
     public void execute(Tuple input, BasicOutputCollector collector) {
 
         LOG.info("ApacheStormMachine --> In execute in VoltageEsperBolt\n");
@@ -55,7 +60,7 @@ public class VoltageEsperBolt implements IBasicBolt {
 
     public void prepare(Map stormConf, TopologyContext context) {
         try {
-            esperOperation = new VoltageEsperOperation();
+            esperOperation = new VoltageEsperOperation(eventQuery);
         } catch (Exception e) {
             throw new RuntimeException();
         }

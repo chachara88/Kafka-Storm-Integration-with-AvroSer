@@ -3,24 +3,33 @@ package org.stormexample.EsperOperations;
 import com.espertech.esper.client.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.stormexample.Bolts.PressureEsperBolt;
+import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.PressureEvent;
 import org.stormexample.Events.TemperatureEvent;
 import org.stormexample.Events.VoltageEvent;
 
+import javax.management.Query;
+
 public class PressureEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(PressureEsperOperation.class);
     private EPRuntime cepRT = null;
-    private static final String WARNING_EVENT_THRESHOLD = "20"; //TODO To be removed?
-    private static final String CRITICAL_EVENT_THRESHOLD = "10";
-    private static final String CRITICAL_EVENT_MULTIPLIER = "0.5";
+    private static final String PRESSURE_WARNING_EVENT_THRESHOLD = "20"; //TODO To be removed?
+    private static final String PRESSURE_CRITICAL_EVENT_THRESHOLD = "10";
+    private static final String PRESSURE_CRITICAL_EVENT_MULTIPLIER = "0.5";
     private Configuration cepConfig = new Configuration();
 
 
     public PressureEsperOperation() {
+    }
+
+    public PressureEsperOperation(EsperStormTopology.Query eventQuery) {
         LOG.info("ApacheStormMachine --> Initializing service operations for Pressure variable");
-        String averageQuery = queryGenerator(0);
+        String averageQuery = queryGenerator(eventQuery);
         initializeService(averageQuery);
     }
+
+
 
     public static class CEPListener implements UpdateListener {
 
@@ -59,10 +68,10 @@ public class PressureEsperOperation {
     }
 
 
-    private String queryGenerator(int QueryType){
+    private String queryGenerator(EsperStormTopology.Query QueryType){
         StringBuilder createQuery = new StringBuilder();
         switch(QueryType){
-            case 0:
+            case AVERAGE:
                 /**
                  * EPL to monitor the pressure temperature every 10 seconds. Will call listener on every event.
                  */
@@ -73,7 +82,7 @@ public class PressureEsperOperation {
                         .append("");
                 LOG.info("Average Query for Pressure  was set!");
                 break;
-            case 1:
+            case WARNING:
                 /**
                  * EPL to check for 2 consecutive pressure events over the threshold - if matched, will alert
                  * listener.
@@ -85,14 +94,14 @@ public class PressureEsperOperation {
                         .append("       pattern (A B) ")
                         .append("       define ")
                         .append("               A as A.pressure > ")
-                        .append(WARNING_EVENT_THRESHOLD)
+                        .append(PRESSURE_WARNING_EVENT_THRESHOLD)
                         .append(",")
                         .append("               B as B.pressure > ")
-                        .append(WARNING_EVENT_THRESHOLD)
+                        .append(PRESSURE_WARNING_EVENT_THRESHOLD)
                         .append(")");
                 LOG.info("Warning Query for Pressure was set!");
                 break;
-            case 2:
+            case CRITICAL:
                 /**
                  * EPL to check for a sudden critical rise across 4 events, where the last event is 1.5x greater
                  * than the first event. This is checking for a sudden, sustained escalating rise in the
@@ -105,12 +114,12 @@ public class PressureEsperOperation {
                         .append("       pattern (A B C D) ")
                         .append("       define ")
                         .append("               A as A.pressure > ")
-                        .append(CRITICAL_EVENT_THRESHOLD)
+                        .append(PRESSURE_CRITICAL_EVENT_THRESHOLD)
                         .append(",")
                         .append("               B as (A.pressure < B.pressure), ")
                         .append("               C as (B.pressure < C.pressure), ")
                         .append("               D as (C.pressure < D.pressure) and D.pressure > (A.pressure * ")
-                        .append(CRITICAL_EVENT_MULTIPLIER)
+                        .append(PRESSURE_CRITICAL_EVENT_MULTIPLIER)
                         .append("))");
                 LOG.info("Critical Query for Pressure was set!");
                 break;
