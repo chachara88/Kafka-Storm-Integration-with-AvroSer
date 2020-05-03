@@ -10,6 +10,7 @@ import org.stormexample.Events.TemperatureEvent;
 public class TemperatureEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(TemperatureEsperOperation.class);
     private EPRuntime cepRT = null;
+    private static final String TEMPERATURE_TIME_WINDOW_BATCH = "30";
     private static final String TEMPERATURE_WARNING_EVENT_THRESHOLD = "20"; //TODO To be removed?
     private static final String TEMPERATURE_CRITICAL_EVENT_THRESHOLD = "10";
     private static final String TEMPERATURE_CRITICAL_EVENT_MULTIPLIER = "0.5";
@@ -68,11 +69,11 @@ public class TemperatureEsperOperation {
                 /**
                  * EPL to monitor the average temperature every 10 seconds. Will call listener on every event.
                  */
-
-                createQuery./*append("select avg(temperature) from ") //Space in the end if needed :P; */
-                        append("select avg(")
+                createQuery.append("select avg(")
                         .append("temperature) from ")
-                        .append("Temperature")
+                        .append("Temperature.win:time_batch(")
+                        .append(TEMPERATURE_TIME_WINDOW_BATCH)
+                        .append(" sec)")
                         .append("");
                 LOG.info("Average Query for Temperature was set!");
                 break;

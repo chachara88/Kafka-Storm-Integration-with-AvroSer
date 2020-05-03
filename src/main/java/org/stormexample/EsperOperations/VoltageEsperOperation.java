@@ -9,6 +9,7 @@ import org.stormexample.Events.VoltageEvent;
 public class VoltageEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(VoltageEsperOperation.class);
     private EPRuntime cepRT = null;
+    private static final String VOLTAGE_TIME_WINDOW_BATCH = "50";
     private static final String VOLTAGE_WARNING_EVENT_THRESHOLD = "20"; //TODO To be removed?
     private static final String VOLTAGE_CRITICAL_EVENT_THRESHOLD = "10";
     private static final String VOLTAGE_CRITICAL_EVENT_MULTIPLIER = "0.5";
@@ -68,11 +69,11 @@ public class VoltageEsperOperation {
                 /**
                  * EPL to monitor the average Voltage every 10 seconds. Will call listener on every event.
                  */
-
-                createQuery./*append("select avg(temperature) from ") //Space in the end if needed :P; */
-                        append("select avg(")
+                createQuery.append("select avg(")
                         .append("voltage) from ")
-                        .append("Voltage")
+                        .append("Voltage.win:time_batch(")
+                        .append(VOLTAGE_TIME_WINDOW_BATCH)
+                        .append(" sec)")
                         .append("");
                 LOG.info("Average Query for Voltage was set!");
                 break;

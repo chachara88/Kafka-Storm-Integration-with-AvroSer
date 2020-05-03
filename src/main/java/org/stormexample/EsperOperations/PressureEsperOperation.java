@@ -11,6 +11,7 @@ public class PressureEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(PressureEsperOperation.class);
     private EPRuntime cepRT = null;
     private static final String PRESSURE_WARNING_EVENT_THRESHOLD = "20"; //TODO To be removed?
+    private static final String PRESSURE_TIME_WINDOW_BATCH = "30"; //TODO To be removed?
     private static final String PRESSURE_CRITICAL_EVENT_THRESHOLD = "10";
     private static final String PRESSURE_CRITICAL_EVENT_MULTIPLIER = "0.5";
     private Configuration cepConfig = new Configuration();
@@ -71,10 +72,11 @@ public class PressureEsperOperation {
                 /**
                  * EPL to monitor the pressure temperature every 10 seconds. Will call listener on every event.
                  */
-                createQuery./*append("select avg(temperature) from ") //Space in the end if needed :P; */
-                        append("select avg(")
+                createQuery.append("select avg(")
                         .append("pressure) from ")
-                        .append("Pressure")
+                        .append("Pressure.win:time_batch(")
+                        .append(PRESSURE_TIME_WINDOW_BATCH)
+                        .append(" sec)")
                         .append("");
                 LOG.info("Average Query for Pressure  was set!");
                 break;
