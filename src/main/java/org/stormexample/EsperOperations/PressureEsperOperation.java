@@ -64,65 +64,80 @@ public class PressureEsperOperation {
 
 
     private String queryGenerator(EsperStormTopology.Query QueryType){
-        StringBuilder createQuery = new StringBuilder();
+        String createQuery = "";
         switch(QueryType){
             case AVERAGE:
-                /**
-                 * EPL to monitor the pressure temperature every 10 seconds. Will call listener on every event.
-                 */
-                createQuery.append("select avg(")
-                        .append("pressure) from ")
-                        .append("Pressure.win:time_batch(")
-                        .append(PRESSURE_TIME_WINDOW_BATCH)
-                        .append(" sec)")
-                        .append("");
-                LOG.info("Average Query for Pressure  was set!");
+                createQuery = averageQuerybuilder();
                 break;
             case WARNING:
-                /**
-                 * EPL to check for 2 consecutive pressure events over the threshold - if matched, will alert
-                 * listener.
-                 */
-                createQuery.append("select * from Pressure")
-//                        .append(EventTypeName)
-                        .append(" match_recognize ( ")
-                        .append("       measures A as press1, B as press2 ")
-                        .append("       pattern (A B) ")
-                        .append("       define ")
-                        .append("               A as A.pressure > ")
-                        .append(PRESSURE_WARNING_EVENT_THRESHOLD)
-                        .append(",")
-                        .append("               B as B.pressure > ")
-                        .append(PRESSURE_WARNING_EVENT_THRESHOLD)
-                        .append(")");
-                LOG.info("Warning Query for Pressure was set!");
+                createQuery = warningQuerybuilder();
                 break;
             case CRITICAL:
-                /**
-                 * EPL to check for a sudden critical rise across 4 events, where the last event is 1.5x greater
-                 * than the first event. This is checking for a sudden, sustained escalating rise in the
-                 * pressure
-                 */
-                createQuery.append("select * from Pressure")
-                        // .append(EventTypeName)
-                        .append(" match_recognize ( ")
-                        .append("       measures A as press1, B as press2, C as press3, D as press4 ")
-                        .append("       pattern (A B C D) ")
-                        .append("       define ")
-                        .append("               A as A.pressure > ")
-                        .append(PRESSURE_CRITICAL_EVENT_THRESHOLD)
-                        .append(",")
-                        .append("               B as (A.pressure < B.pressure), ")
-                        .append("               C as (B.pressure < C.pressure), ")
-                        .append("               D as (C.pressure < D.pressure) and D.pressure > (A.pressure * ")
-                        .append(PRESSURE_CRITICAL_EVENT_MULTIPLIER)
-                        .append("))");
-                LOG.info("Critical Query for Pressure was set!");
+                createQuery = criticalQuerybuilder();
                 break;
             default:
                 LOG.error("No Query was set!");
         }
 
-        return createQuery.toString();
+        return createQuery;
+    }
+
+    private String averageQuerybuilder() {
+        StringBuilder averageQuery = new StringBuilder();
+        /**
+         * EPL to monitor the pressure pressure every 10 seconds. Will call listener on every event.
+         */
+        averageQuery.append("select avg(")
+                .append("pressure) from ")
+                .append("Pressure.win:time_batch(")
+                .append(PRESSURE_TIME_WINDOW_BATCH)
+                .append(" sec)")
+                .append("");
+        LOG.info("Average Query for Pressure  was set!");
+        return  averageQuery.toString();
+    }
+
+    private String warningQuerybuilder() {
+        StringBuilder warningQuery = new StringBuilder();
+        /**
+         * EPL to check for 2 consecutive pressure events over the threshold - if matched, will alert
+         * listener.
+         */
+        warningQuery.append("select * from Pressure")
+                .append(" match_recognize ( ")
+                .append("       measures A as press1, B as press2 ")
+                .append("       pattern (A B) ")
+                .append("       define ")
+                .append("               A as A.pressure > ")
+                .append(PRESSURE_WARNING_EVENT_THRESHOLD)
+                .append(",")
+                .append("               B as B.pressure > ")
+                .append(PRESSURE_WARNING_EVENT_THRESHOLD)
+                .append(")");
+        LOG.info("Warning Query for Pressure was set!");
+        return  warningQuery.toString();
+    }
+
+    private String criticalQuerybuilder() {
+        StringBuilder criticalQuery = new StringBuilder();
+        /**
+         * EPL to check for 2 consecutive pressure events over the threshold - if matched, will alert
+         * listener.
+         */
+        criticalQuery.append("select * from Pressure")
+                .append(" match_recognize ( ")
+                .append("       measures A as press1, B as press2, C as press3, D as press4 ")
+                .append("       pattern (A B C D) ")
+                .append("       define ")
+                .append("               A as A.pressure > ")
+                .append(PRESSURE_CRITICAL_EVENT_THRESHOLD)
+                .append(",")
+                .append("               B as (A.pressure < B.pressure), ")
+                .append("               C as (B.pressure < C.pressure), ")
+                .append("               D as (C.pressure < D.pressure) and D.pressure > (A.pressure * ")
+                .append(PRESSURE_CRITICAL_EVENT_MULTIPLIER)
+                .append("))");
+        LOG.info("Critical Query for Pressure was set!");
+        return  criticalQuery.toString();
     }
 }
