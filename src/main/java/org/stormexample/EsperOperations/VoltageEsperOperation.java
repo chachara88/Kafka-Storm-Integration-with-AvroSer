@@ -9,17 +9,16 @@ import org.stormexample.Events.VoltageEvent;
 public class VoltageEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(VoltageEsperOperation.class);
     private EPRuntime cepRT = null;
-    private static final String VOLTAGE_TIME_WINDOW_BATCH = "50";
-    private static final String VOLTAGE_WARNING_EVENT_THRESHOLD = "20"; //TODO To be removed?
-    private static final String VOLTAGE_CRITICAL_EVENT_THRESHOLD = "10";
-    private static final String VOLTAGE_CRITICAL_EVENT_MULTIPLIER = "0.5";
+    private static final String VOLTAGE_TIME_WINDOW_BATCH = "15";
+    private static final String VOLTAGE_WARNING_EVENT_THRESHOLD = "10"; //TODO To be removed?
+    private static final String VOLTAGE_CRITICAL_EVENT_THRESHOLD = "9";
+    private static final String VOLTAGE_CRITICAL_EVENT_MULTIPLIER = "1";
     private Configuration cepConfig = new Configuration();
 
     public VoltageEsperOperation() {}
 
     public VoltageEsperOperation(EsperStormTopology.Query query) {
         LOG.info("ApacheStormMachine --> Initializing service operations for Voltage variable");
-//        //TODO  To be updated with Temperature Event
         String averageQuery = queryGenerator(query);
         initializeService(averageQuery);
     }
@@ -28,12 +27,9 @@ public class VoltageEsperOperation {
     public static class CEPListener implements UpdateListener {
 
         public void update(EventBean[] newData, EventBean[] oldData) { //TODO to be updated!
-            try { //TODO to be updated in generic form:)`
-                LOG.warn("ApacheStormMachine --> #################### Event received: " + newData);
+            try {
                 for (EventBean eventBean : newData) {
-                    LOG.warn("ApacheStormMachine --> ************************ Event received 1: " + eventBean.getUnderlying());
-                    LOG.warn("ApacheStormMachine --> ************************ " );
-
+                    LOG.warn("ApacheStormMachine --> ******* Voltage Event received *******: " + eventBean.getUnderlying());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -98,7 +94,10 @@ public class VoltageEsperOperation {
          * EPL to check for 2 consecutive voltage events over the threshold - if matched, will alert
          * listener.
          */
-        warningQuery.append("select * from Voltage")
+        warningQuery.append("select * from ")
+                .append("Voltage.win:time_batch(")
+                .append(VOLTAGE_TIME_WINDOW_BATCH)
+                .append(" sec)")
                 .append(" match_recognize ( ")
                 .append("       measures A as volt1, B as volt2 ")
                 .append("       pattern (A B) ")
@@ -120,7 +119,10 @@ public class VoltageEsperOperation {
          * than the first event. This is checking for a sudden, sustained escalating rise in the
          * voltage
          */
-        criticalQuery.append("select * from Voltage")
+        criticalQuery.append("select * from ")
+                .append("Voltage.win:time_batch(")
+                .append(VOLTAGE_TIME_WINDOW_BATCH)
+                .append(" sec)")
                 .append(" match_recognize ( ")
                 .append("       measures A as volt1, B as volt2, C as volt3, D as volt4 ")
                 .append("       pattern (A B C D) ")
@@ -128,9 +130,9 @@ public class VoltageEsperOperation {
                 .append("               A as A.voltage > ")
                 .append(VOLTAGE_CRITICAL_EVENT_THRESHOLD)
                 .append(",")
-                .append("               B as (A.voltage < B.voltage), ")
-                .append("               C as (B.voltage < C.voltage), ")
-                .append("               D as (C.voltage < D.voltage) and D.voltage > (A.voltage * ")
+                .append("               B as (A.voltage <= B.voltage), ")
+                .append("               C as (B.voltage <= C.voltage), ")
+                .append("               D as (C.voltage <= D.voltage) and D.voltage >= (A.voltage * ")
                 .append(VOLTAGE_CRITICAL_EVENT_MULTIPLIER)
                 .append("))");
         LOG.info("Critical Query for Voltage was set!");

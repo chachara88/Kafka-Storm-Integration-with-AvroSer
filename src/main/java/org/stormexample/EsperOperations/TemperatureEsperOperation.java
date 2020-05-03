@@ -1,6 +1,7 @@
 package org.stormexample.EsperOperations;
 
 import com.espertech.esper.client.*;
+import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperStormTopology;
@@ -11,9 +12,9 @@ public class TemperatureEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(TemperatureEsperOperation.class);
     private EPRuntime cepRT = null;
     private static final String TEMPERATURE_TIME_WINDOW_BATCH = "30";
-    private static final String TEMPERATURE_WARNING_EVENT_THRESHOLD = "20"; //TODO To be removed?
-    private static final String TEMPERATURE_CRITICAL_EVENT_THRESHOLD = "10";
-    private static final String TEMPERATURE_CRITICAL_EVENT_MULTIPLIER = "0.5";
+    private static final String TEMPERATURE_WARNING_EVENT_THRESHOLD = "24.8";
+    private static final String TEMPERATURE_CRITICAL_EVENT_THRESHOLD = "24.5";
+    private static final String TEMPERATURE_CRITICAL_EVENT_ADDER = "0.1";
     private Configuration cepConfig = new Configuration();
 
     public TemperatureEsperOperation() {
@@ -29,11 +30,8 @@ public class TemperatureEsperOperation {
 
         public void update(EventBean[] newData, EventBean[] oldData) {
             try {
-                LOG.warn("ApacheStormMachine --> #################### Event received: " + newData);
                 for (EventBean eventBean : newData) {
-                    LOG.warn("ApacheStormMachine --> ************************ Event received 1: " + eventBean.getUnderlying());
-                    LOG.warn("ApacheStormMachine --> ************************ " );
-
+                    LOG.warn("ApacheStormMachine --> ******* Temperature Event received *******: " + eventBean.getUnderlying());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -100,9 +98,12 @@ public class TemperatureEsperOperation {
          * EPL to check for 2 consecutive temperature events over the threshold - if matched, will alert
          * listener.
          */
-        warningQuery.append("select * from Temperature")
+        warningQuery.append("select * from ")
+                .append("Temperature.win:time_batch(")
+                .append(TEMPERATURE_TIME_WINDOW_BATCH)
+                .append(" sec)")
                 .append(" match_recognize ( ")
-                .append("       measures A as press1, B as press2 ")
+                .append("       measures A as temp1, B as temp2 ")
                 .append("       pattern (A B) ")
                 .append("       define ")
                 .append("               A as A.temperature > ")
@@ -122,7 +123,10 @@ public class TemperatureEsperOperation {
          * than the first event. This is checking for a sudden, sustained escalating rise in the
          * temperature
          */
-        criticalQuery.append("select * from Temperature")
+        criticalQuery.append("select * from ")
+                .append("Temperature.win:time_batch(")
+                .append(TEMPERATURE_TIME_WINDOW_BATCH)
+                .append(" sec)")
                 .append(" match_recognize ( ")
                 .append("       measures A as temp1, B as temp2, C as temp3, D as temp4 ")
                 .append("       pattern (A B C D) ")
@@ -130,10 +134,10 @@ public class TemperatureEsperOperation {
                 .append("               A as A.temperature > ")
                 .append(TEMPERATURE_CRITICAL_EVENT_THRESHOLD)
                 .append(",")
-                .append("               B as (A.temperature < B.temperature), ")
-                .append("               C as (B.temperature < C.temperature), ")
-                .append("               D as (C.temperature < D.temperature) and D.temperature > (A.temperature * ")
-                .append(TEMPERATURE_CRITICAL_EVENT_MULTIPLIER)
+                .append("               B as (A.temperature <= B.temperature), ")
+                .append("               C as (B.temperature <= C.temperature), ")
+                .append("               D as (C.temperature <= D.temperature) and D.temperature >= (A.temperature + ")
+                .append(TEMPERATURE_CRITICAL_EVENT_ADDER)
                 .append("))");
         LOG.info("Critical Query for Temperature was set!");
         return  criticalQuery.toString();
