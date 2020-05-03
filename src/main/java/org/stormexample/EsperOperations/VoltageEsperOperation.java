@@ -51,13 +51,11 @@ public class VoltageEsperOperation {
     public void esperPut(VoltageEvent Voltage) { cepRT.sendEvent(Voltage); }
 
     private void executeQueries(Configuration cepConfig, String query, String providerUri){
-        EPServiceProvider cep = EPServiceProviderManager.getProvider(
-                "providerUri", cepConfig);
+        EPServiceProvider cep = EPServiceProviderManager.getProvider("providerUri", cepConfig);
         cepRT = cep.getEPRuntime();
 
         EPAdministrator cepAdm = cep.getEPAdministrator();
-        EPStatement cepStatement = cepAdm
-                .createEPL(query);
+        EPStatement cepStatement = cepAdm.createEPL(query);
         cepStatement.addListener(new CEPListener());
     }
 
@@ -67,7 +65,8 @@ public class VoltageEsperOperation {
         switch(queryType){
             case AVERAGE:
                 /**
-                 * EPL to monitor the average Voltage every 10 seconds. Will call listener on every event.
+                 * EPL to monitor the average Voltage every 10 seconds.
+                 * Will call listener on every event.
                  */
                 createQuery.append("select avg(")
                         .append("voltage) from ")

@@ -54,13 +54,11 @@ public class PressureEsperOperation {
     public void esperPut(PressureEvent Pressure) { cepRT.sendEvent(Pressure); }
 
     private void executeQueries(Configuration cepConfig, String query, String providerUri){
-        EPServiceProvider cep = EPServiceProviderManager.getProvider(
-                "providerUri", cepConfig);
+        EPServiceProvider cep = EPServiceProviderManager.getProvider("providerUri", cepConfig);
         cepRT = cep.getEPRuntime();
 
         EPAdministrator cepAdm = cep.getEPAdministrator();
-        EPStatement cepStatement = cepAdm
-                .createEPL(query);
+        EPStatement cepStatement = cepAdm.createEPL(query);
         cepStatement.addListener(new CEPListener());
     }
 

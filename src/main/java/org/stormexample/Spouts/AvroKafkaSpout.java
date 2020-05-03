@@ -69,7 +69,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
     }
 
     @VisibleForTesting
-    AvroKafkaSpout(AvroKafkaSpoutConfig<K, V> avroKafkaSpoutConfig, ConsumerFactory<K, V> kafkaConsumerFactory, TopicAssigner topicAssigner) {
+    AvroKafkaSpout(AvroKafkaSpoutConfig<K, V> avroKafkaSpoutConfig, ConsumerFactory<K, V> kafkaConsumerFactory,
+                   TopicAssigner topicAssigner) {
         this.kafkaConsumerFactory = kafkaConsumerFactory;
         this.topicAssigner = topicAssigner;
         this.avroKafkaSpoutConfig = avroKafkaSpoutConfig;
@@ -82,14 +83,17 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         this.retryService = this.avroKafkaSpoutConfig.getRetryService();
         this.tupleListener = this.avroKafkaSpoutConfig.getTupleListener();
         if (this.avroKafkaSpoutConfig.getProcessingGuarantee() != ProcessingGuarantee.AT_MOST_ONCE) {
-            this.commitTimer = new Timer(500L, this.avroKafkaSpoutConfig.getOffsetsCommitPeriodMs(), TimeUnit.MILLISECONDS);
+            this.commitTimer = new Timer(500L, this.avroKafkaSpoutConfig.getOffsetsCommitPeriodMs(),
+                    TimeUnit.MILLISECONDS);
         }
 
-        this.refreshAssignmentTimer = new Timer(500L, this.avroKafkaSpoutConfig.getPartitionRefreshPeriodMs(), TimeUnit.MILLISECONDS);
+        this.refreshAssignmentTimer = new Timer(500L, this.avroKafkaSpoutConfig.getPartitionRefreshPeriodMs(),
+                TimeUnit.MILLISECONDS);
         this.offsetManagers = new HashMap();
         this.emitted = new HashSet();
         this.waitingToEmit = new HashMap();
-        this.commitMetadataManager = new AvroCommitMetadataManager(context, this.avroKafkaSpoutConfig.getProcessingGuarantee());
+        this.commitMetadataManager = new AvroCommitMetadataManager(context,
+                this.avroKafkaSpoutConfig.getProcessingGuarantee());
         this.rebalanceListener = new KafkaSpoutConsumerRebalanceListener();
         this.consumer = this.kafkaConsumerFactory.createConsumer(this.avroKafkaSpoutConfig.getKafkaProps());
         this.tupleListener.open(conf, context);
@@ -107,7 +111,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         }, () -> {
             return this.consumer;
         });
-        this.context.registerMetric("kafkaOffset", this.kafkaOffsetMetric, this.avroKafkaSpoutConfig.getMetricsTimeBucketSizeInSecs());
+        this.context.registerMetric("kafkaOffset", this.kafkaOffsetMetric,
+                this.avroKafkaSpoutConfig.getMetricsTimeBucketSizeInSecs());
     }
 
     private boolean canRegisterMetrics() {
@@ -115,7 +120,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
             KafkaConsumer.class.getDeclaredMethod("beginningOffsets", Collection.class);
             return true;
         } catch (NoSuchMethodException var2) {
-            LOG.warn("Minimum required kafka-clients library version to enable metrics is 0.10.1.0. Disabling spout metrics.");
+            LOG.warn("Minimum required kafka-clients library version to enable metrics is 0.10.1.0. " +
+                    "Disabling spout metrics.");
             return false;
         }
     }
@@ -134,7 +140,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                 if (this.isAtLeastOnceProcessing()) {
                     this.commitOffsetsForAckedTuples();
                 } else if (this.avroKafkaSpoutConfig.getProcessingGuarantee() == ProcessingGuarantee.NO_GUARANTEE) {
-                    Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = this.createFetchedOffsetsMetadata(this.consumer.assignment());
+                    Map<TopicPartition, OffsetAndMetadata> offsetsToCommit =
+                            this.createFetchedOffsetsMetadata(this.consumer.assignment());
                     this.consumer.commitAsync(offsetsToCommit, (OffsetCommitCallback)null);
                     LOG.debug("Committed offsets {} to Kafka", offsetsToCommit);
                 }
@@ -182,12 +189,15 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                         if (numUncommittedOffsets < maxUncommittedOffsets) {
                             pollablePartitions.add(tp);
                         } else {
-                            long offsetAtLimit = offsetManager.getNthUncommittedOffsetAfterCommittedOffset(maxUncommittedOffsets);
+                            long offsetAtLimit = offsetManager.
+                                    getNthUncommittedOffsetAfterCommittedOffset(maxUncommittedOffsets);
                             Long earliestRetriableOffset = (Long)earliestRetriableOffsets.get(tp);
                             if (earliestRetriableOffset != null && earliestRetriableOffset <= offsetAtLimit) {
                                 pollablePartitions.add(tp);
                             } else {
-                                LOG.debug("Not polling on partition [{}]. It has [{}] uncommitted offsets, which exceeds the limit of [{}]. ", new Object[]{tp, numUncommittedOffsets, maxUncommittedOffsets});
+                                LOG.debug("Not polling on partition [{}]. It has [{}] uncommitted offsets, " +
+                                        "which exceeds the limit of [{}]. ",
+                                        new Object[]{tp, numUncommittedOffsets, maxUncommittedOffsets});
                             }
                         }
                     }
@@ -224,11 +234,13 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         try {
             this.consumer.pause(pausedPartitions);
             ConsumerRecords<K, V> consumerRecords = this.consumer.poll(this.avroKafkaSpoutConfig.getPollTimeoutMs());
-            this.ackRetriableOffsetsIfCompactedAway(pollablePartitionsInfo.pollableEarliestRetriableOffsets, consumerRecords);
+            this.ackRetriableOffsetsIfCompactedAway(
+                    pollablePartitionsInfo.pollableEarliestRetriableOffsets, consumerRecords);
             int numPolledRecords = consumerRecords.count();
             LOG.debug("Polled [{}] records from Kafka", numPolledRecords);
             if (this.avroKafkaSpoutConfig.getProcessingGuarantee() == ProcessingGuarantee.AT_MOST_ONCE) {
-                Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = this.createFetchedOffsetsMetadata(this.consumer.assignment());
+                Map<TopicPartition, OffsetAndMetadata> offsetsToCommit = this.createFetchedOffsetsMetadata(
+                        this.consumer.assignment());
                 this.consumer.commitSync(offsetsToCommit);
                 LOG.debug("Committed offsets {} to Kafka", offsetsToCommit);
             }
@@ -246,12 +258,14 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
 
         while(var2.hasNext()) {
             Entry<TopicPartition, Long> retriableTopicPartitionAndOffset = (Entry)var2.next();
-            this.consumer.seek((TopicPartition)retriableTopicPartitionAndOffset.getKey(), (Long)retriableTopicPartitionAndOffset.getValue());
+            this.consumer.seek((TopicPartition)retriableTopicPartitionAndOffset.getKey(),
+                    (Long)retriableTopicPartitionAndOffset.getValue());
         }
 
     }
 
-    private void ackRetriableOffsetsIfCompactedAway(Map<TopicPartition, Long> earliestRetriableOffsets, ConsumerRecords<K, V> consumerRecords) {
+    private void ackRetriableOffsetsIfCompactedAway(Map<TopicPartition, Long> earliestRetriableOffsets,
+                                                    ConsumerRecords<K, V> consumerRecords) {
         Iterator var3 = earliestRetriableOffsets.entrySet().iterator();
 
         while(true) {
@@ -278,8 +292,10 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
 
             for(long i = seekOffset; i < earliestReceivedOffset; ++i) {
                 KafkaSpoutMessageId msgId = this.retryService.getMessageId(tp, i);
-                if (!((OffsetManager)this.offsetManagers.get(tp)).contains(msgId) && !this.emitted.contains(msgId)) {
-                    LOG.debug("Record at offset [{}] appears to have been compacted away from topic [{}], marking as acked", i, tp);
+                if (!((OffsetManager)this.offsetManagers.get(tp)).contains(msgId) &&
+                        !this.emitted.contains(msgId)) {
+                    LOG.debug("Record at offset [{}] appears to have been compacted away from topic [{}], " +
+                            "marking as acked", i, tp);
                     this.retryService.remove(msgId);
                     this.emitted.add(msgId);
                     this.ack(msgId);
@@ -335,7 +351,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
 
                         this.collector.emit(stream, tuple, msgId);
                         this.tupleListener.onEmit(tuple, msgId);
-                        LOG.info("ApacheStormMachine --> The Emitted tuple [{}] for record [{}] with msgId [{}]", new Object[]{tuple, record, msgId});
+                        LOG.info("ApacheStormMachine --> The Emitted tuple [{}] for record [{}] with msgId [{}]",
+                                new Object[]{tuple, record, msgId});
                     }
 
                     return true;
@@ -363,7 +380,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
 
         while(var3.hasNext()) {
             TopicPartition tp = (TopicPartition)var3.next();
-            offsetsToCommit.put(tp, new OffsetAndMetadata(this.consumer.position(tp), this.commitMetadataManager.getCommitMetadata()));
+            offsetsToCommit.put(tp, new OffsetAndMetadata(this.consumer.position(tp),
+                    this.commitMetadataManager.getCommitMetadata()));
         }
 
         return offsetsToCommit;
@@ -376,7 +394,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         Entry tpOffset;
         while(var2.hasNext()) {
             tpOffset = (Entry)var2.next();
-            OffsetAndMetadata nextCommitOffset = ((OffsetManager)tpOffset.getValue()).findNextCommitOffset(this.commitMetadataManager.getCommitMetadata());
+            OffsetAndMetadata nextCommitOffset = ((OffsetManager)tpOffset.getValue())
+                    .findNextCommitOffset(this.commitMetadataManager.getCommitMetadata());
             if (nextCommitOffset != null) {
                 nextCommitOffsets.put((TopicPartition) tpOffset.getKey(), nextCommitOffset);
                 //TODO maybe (TopicPartition) tpOffset.getKey() casting is error
@@ -394,7 +413,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                 long position = this.consumer.position(tp);
                 long committedOffset = ((OffsetAndMetadata)tpOffset.getValue()).offset();
                 if (position < committedOffset) {
-                    LOG.debug("Consumer fell behind committed offset. Catching up. Position was [{}], skipping to [{}]", position, committedOffset);
+                    LOG.debug("Consumer fell behind committed offset. Catching up. Position was [{}], skipping to [{}]",
+                            position, committedOffset);
                     this.consumer.seek(tp, committedOffset);
                 }
 
@@ -407,7 +427,8 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
 
                 OffsetManager offsetManager = (OffsetManager)this.offsetManagers.get(tp);
                 offsetManager.commit((OffsetAndMetadata)tpOffset.getValue());
-                LOG.debug("[{}] uncommitted offsets for partition [{}] after commit", offsetManager.getNumUncommittedOffsets(), tp);
+                LOG.debug("[{}] uncommitted offsets for partition [{}] after commit",
+                        offsetManager.getNumUncommittedOffsets(), tp);
             }
         } else {
             LOG.trace("No offsets to commit. {}", this);
@@ -424,9 +445,13 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                 this.tupleListener.onAck(msgId);
             } else {
                 if (!this.emitted.contains(msgId)) {
-                    LOG.debug("Received ack for message [{}], associated with tuple emitted for a ConsumerRecord that came from a topic-partition that this consumer group instance is no longer tracking due to rebalance/partition reassignment. No action taken.", msgId);
+                    LOG.debug("Received ack for message [{}], associated with tuple emitted for a ConsumerRecord " +
+                            "that came from a topic-partition that this consumer group instance is no longer " +
+                            "tracking due to rebalance/partition reassignment. No action taken.", msgId);
                 } else {
-                    Validate.isTrue(!this.retryService.isScheduled(msgId), "The message id " + msgId + " is queued for retry while being acked. This should never occur barring errors in the RetryService implementation or the spout code.");
+                    Validate.isTrue(!this.retryService.isScheduled(msgId), "The message id " + msgId +
+                            " is queued for retry while being acked. This should never occur barring errors " +
+                            "in the RetryService implementation or the spout code.");
                     ((OffsetManager)this.offsetManagers.get(msgId.getTopicPartition())).addToAckMsgs(msgId);
                     this.emitted.remove(msgId);
                 }
@@ -440,9 +465,12 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         if (this.isAtLeastOnceProcessing()) {
             KafkaSpoutMessageId msgId = (KafkaSpoutMessageId)messageId;
             if (!this.emitted.contains(msgId)) {
-                LOG.debug("Received fail for tuple this spout is no longer tracking. Partitions may have been reassigned. Ignoring message [{}]", msgId);
+                LOG.debug("Received fail for tuple this spout is no longer tracking. " +
+                        "Partitions may have been reassigned. Ignoring message [{}]", msgId);
             } else {
-                Validate.isTrue(!this.retryService.isScheduled(msgId), "The message id " + msgId + " is queued for retry while being failed. This should never occur barring errors in the RetryService implementation or the spout code.");
+                Validate.isTrue(!this.retryService.isScheduled(msgId), "The message id " + msgId +
+                        " is queued for retry while being failed. This should never occur barring errors " +
+                        "in the RetryService implementation or the spout code.");
                 msgId.incrementNumFails();
                 if (!this.retryService.schedule(msgId)) {
                     LOG.debug("Reached maximum number of retries. Message [{}] being marked as acked.", msgId);
@@ -467,10 +495,12 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
     }
 
     private void refreshAssignment() {
-        Set<TopicPartition> allPartitions = this.avroKafkaSpoutConfig.getTopicFilter().getAllSubscribedPartitions(this.consumer);
+        Set<TopicPartition> allPartitions = this.avroKafkaSpoutConfig.getTopicFilter()
+                .getAllSubscribedPartitions(this.consumer);
         List<TopicPartition> allPartitionsSorted = new ArrayList(allPartitions);
         Collections.sort(allPartitionsSorted, TopicPartitionComparator.INSTANCE);
-        Set<TopicPartition> assignedPartitions = this.avroKafkaSpoutConfig.getTopicPartitioner().getPartitionsForThisTask(allPartitionsSorted, this.context);
+        Set<TopicPartition> assignedPartitions = this.avroKafkaSpoutConfig.getTopicPartitioner()
+                .getPartitionsForThisTask(allPartitionsSorted, this.context);
         this.topicAssigner.assignPartitions(this.consumer, assignedPartitions, this.rebalanceListener);
     }
 
@@ -556,7 +586,9 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
     }
 
     private boolean isWrapper(Class<?> type) {
-        return type == Double.class || type == Float.class || type == Long.class || type == Integer.class || type == Short.class || type == Character.class || type == Byte.class || type == Boolean.class || type == String.class;
+        return type == Double.class || type == Float.class || type == Long.class || type == Integer.class ||
+                type == Short.class || type == Character.class || type == Byte.class ||
+                type == Boolean.class || type == String.class;
     }
 
     private String getTopicsString() {
@@ -572,9 +604,11 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         private final Set<TopicPartition> pollablePartitions;
         private final Map<TopicPartition, Long> pollableEarliestRetriableOffsets;
 
-        public PollablePartitionsInfo(Set<TopicPartition> pollablePartitions, Map<TopicPartition, Long> earliestRetriableOffsets) {
+        public PollablePartitionsInfo(Set<TopicPartition> pollablePartitions, Map<TopicPartition, Long>
+                earliestRetriableOffsets) {
             this.pollablePartitions = pollablePartitions;
-            this.pollableEarliestRetriableOffsets = (Map)earliestRetriableOffsets.entrySet().stream().filter((entry) -> {
+            this.pollableEarliestRetriableOffsets = (Map)earliestRetriableOffsets.entrySet().stream().filter((entry)
+                    -> {
                 return pollablePartitions.contains(entry.getKey());
             }).collect(Collectors.toMap((entry) -> {
                 return (TopicPartition)entry.getKey();
@@ -597,7 +631,9 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
 
         public void onPartitionsRevoked(Collection<TopicPartition> partitions) {
             this.previousAssignment = partitions;
-            AvroKafkaSpout.LOG.info("Partitions revoked. [consumer-group={}, consumer={}, topic-partitions={}]", new Object[]{AvroKafkaSpout.this.avroKafkaSpoutConfig.getConsumerGroupId(), AvroKafkaSpout.this.consumer, partitions});
+            AvroKafkaSpout.LOG.info("Partitions revoked. [consumer-group={}, consumer={}, topic-partitions={}]",
+                    new Object[]{AvroKafkaSpout.this.avroKafkaSpoutConfig.getConsumerGroupId(),
+                            AvroKafkaSpout.this.consumer, partitions});
             if (AvroKafkaSpout.this.isAtLeastOnceProcessing()) {
                 AvroKafkaSpout.this.commitOffsetsForAckedTuples();
             }
@@ -605,7 +641,10 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         }
 
         public void onPartitionsAssigned(Collection<TopicPartition> partitions) {
-            AvroKafkaSpout.LOG.info("Partitions reassignment. [task-ID={}, consumer-group={}, consumer={}, topic-partitions={}]", new Object[]{AvroKafkaSpout.this.context.getThisTaskId(), AvroKafkaSpout.this.avroKafkaSpoutConfig.getConsumerGroupId(), AvroKafkaSpout.this.consumer, partitions});
+            AvroKafkaSpout.LOG.info("Partitions reassignment. [task-ID={}, consumer-group={}, consumer={}, " +
+                    "topic-partitions={}]", new Object[]{AvroKafkaSpout.this.context.getThisTaskId(),
+                    AvroKafkaSpout.this.avroKafkaSpoutConfig.getConsumerGroupId(),
+                    AvroKafkaSpout.this.consumer, partitions});
             this.initialize(partitions);
             AvroKafkaSpout.this.tupleListener.onPartitionsReassigned(partitions);
         }
@@ -628,8 +667,11 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                 TopicPartition newTp = (TopicPartition)var3.next();
                 OffsetAndMetadata committedOffset = AvroKafkaSpout.this.consumer.committed(newTp);
                 long fetchOffset = this.doSeek(newTp, committedOffset);
-                AvroKafkaSpout.LOG.debug("Set consumer position to [{}] for topic-partition [{}] with [{}] and committed offset [{}]", new Object[]{fetchOffset, newTp, AvroKafkaSpout.this.firstPollOffsetStrategy, committedOffset});
-                if (AvroKafkaSpout.this.isAtLeastOnceProcessing() && !AvroKafkaSpout.this.offsetManagers.containsKey(newTp)) {
+                AvroKafkaSpout.LOG.debug("Set consumer position to [{}] for topic-partition [{}] with [{}] " +
+                        "and committed offset [{}]",
+                        new Object[]{fetchOffset, newTp, AvroKafkaSpout.this.firstPollOffsetStrategy, committedOffset});
+                if (AvroKafkaSpout.this.isAtLeastOnceProcessing() &&
+                        !AvroKafkaSpout.this.offsetManagers.containsKey(newTp)) {
                     AvroKafkaSpout.this.offsetManagers.put(newTp, new OffsetManager(newTp, fetchOffset));
                 }
             }
@@ -638,9 +680,11 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
         }
 
         private long doSeek(TopicPartition newTp, OffsetAndMetadata committedOffset) {
-            AvroKafkaSpout.LOG.trace("Seeking offset for topic-partition [{}] with [{}] and committed offset [{}]", new Object[]{newTp, AvroKafkaSpout.this.firstPollOffsetStrategy, committedOffset});
+            AvroKafkaSpout.LOG.trace("Seeking offset for topic-partition [{}] with [{}] and committed offset [{}]",
+                    new Object[]{newTp, AvroKafkaSpout.this.firstPollOffsetStrategy, committedOffset});
             if (committedOffset != null) {
-                if (AvroKafkaSpout.this.commitMetadataManager.isOffsetCommittedByThisTopology(newTp, committedOffset, Collections.unmodifiableMap(AvroKafkaSpout.this.offsetManagers))) {
+                if (AvroKafkaSpout.this.commitMetadataManager.isOffsetCommittedByThisTopology(newTp, committedOffset,
+                        Collections.unmodifiableMap(AvroKafkaSpout.this.offsetManagers))) {
                     AvroKafkaSpout.this.consumer.seek(newTp, committedOffset.offset());
                 } else if (AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.EARLIEST)) {
                     AvroKafkaSpout.this.consumer.seekToBeginning(Collections.singleton(newTp));
@@ -649,8 +693,10 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                 } else {
                     AvroKafkaSpout.this.consumer.seek(newTp, committedOffset.offset());
                 }
-            } else if (!AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.EARLIEST) && !AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.UNCOMMITTED_EARLIEST)) {
-                if (AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.LATEST) || AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.UNCOMMITTED_LATEST)) {
+            } else if (!AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.EARLIEST) &&
+                    !AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.UNCOMMITTED_EARLIEST)) {
+                if (AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.LATEST) ||
+                        AvroKafkaSpout.this.firstPollOffsetStrategy.equals(FirstPollOffsetStrategy.UNCOMMITTED_LATEST)){
                     AvroKafkaSpout.this.consumer.seekToEnd(Collections.singleton(newTp));
                 }
             } else {

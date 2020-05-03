@@ -11,10 +11,12 @@ public class VoltageEvent {
 
     /**
      * Single value constructor.
+     *
      * @param value Voltage in Volt.
      */
     /**
      * Pressure constructor.
+     *
      * @param voltage Voltage in Volt
      * @param timeOfReading Time of Reading
      */
@@ -27,6 +29,7 @@ public class VoltageEvent {
     }
     /**
      * Get the Voltage.
+     *
      * @return Voltage in Volt
      */
     public double getVoltage() {
@@ -35,6 +38,7 @@ public class VoltageEvent {
 
     /**
      * Get time Voltage reading was taken.
+     *
      * @return Time of Reading
      */
     public LocalTime getTimeOfReading() {

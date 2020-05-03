@@ -11,10 +11,12 @@ public class PressureEvent {
 
     /**
      * Single value constructor.
+     *
      * @param value Pressure in Pascal.
      */
     /**
      * Pressure constructor.
+     *
      * @param pressure Pressure in Pascal
      * @param timeOfReading Time of Reading
      */
@@ -28,6 +30,7 @@ public class PressureEvent {
 
     /**
      * Get the Pressure.
+     *
      * @return Pressure in Pascal
      */
     public double getPressure() {
@@ -36,6 +39,7 @@ public class PressureEvent {
 
     /**
      * Get time Pressure reading was taken.
+     *
      * @return Time of Reading
      */
     public LocalTime getTimeOfReading() {

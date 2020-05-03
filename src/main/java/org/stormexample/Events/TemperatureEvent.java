@@ -12,10 +12,12 @@ public class TemperatureEvent {
 
     /**
      * Single value constructor.
+     *
      * @param value Temperature in Celsius.
      */
     /**
-     * Temeratur constructor.
+     * Temerature constructor.
+     *
      * @param temperature Temperature in Celsius
      * @param timeOfReading Time of Reading
      */
@@ -29,6 +31,7 @@ public class TemperatureEvent {
 
     /**
      * Get the Temperature.
+     *
      * @return Temperature in Celsius
      */
     public double getTemperature() {
@@ -37,6 +40,7 @@ public class TemperatureEvent {
 
     /**
      * Get time Temperature reading was taken.
+     *
      * @return Time of Reading
      */
     public LocalTime getTimeOfReading() {

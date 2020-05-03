@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
+@SuppressWarnings("serial")
 public class ValueExtractorBolt implements IBasicBolt {
         private static final Logger LOG = LoggerFactory.getLogger(ValueExtractorBolt.class);
         public ValueExtractorBolt(){}
