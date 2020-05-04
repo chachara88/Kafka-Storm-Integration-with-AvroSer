@@ -20,11 +20,6 @@ public class DefaultStreamSplitter implements IBasicBolt {
 
     @Override
     public void prepare(Map<String, Object> map, TopologyContext topologyContext) {
-        try {
-
-        } catch (Exception e) {
-
-        }
     }
 
     /**

@@ -153,6 +153,7 @@ public class AvroKafkaSpout<K, V> extends BaseRichSpout {
                     this.setWaitingToEmit(this.pollKafkaBroker(pollablePartitionsInfo));
                 } catch (RetriableException var3) {
                     LOG.error("Failed to poll from kafka.", var3);
+                    throw new RuntimeException();
                 }
             }
 

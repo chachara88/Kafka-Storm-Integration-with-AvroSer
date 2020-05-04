@@ -1,11 +1,12 @@
 package org.stormexample.EsperOperations;
 
 import com.espertech.esper.client.*;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperStormTopology;
 import org.stormexample.Events.TemperatureEvent;
+
+import javax.management.RuntimeErrorException;
 
 
 public class TemperatureEsperOperation {
@@ -15,6 +16,8 @@ public class TemperatureEsperOperation {
     private static final String TEMPERATURE_WARNING_EVENT_THRESHOLD = "24.8";
     private static final String TEMPERATURE_CRITICAL_EVENT_THRESHOLD = "24.5";
     private static final String TEMPERATURE_CRITICAL_EVENT_ADDER = "0.1";
+    private static final String TIME_MEASUREMENT_UNIT = " sec)";
+    private static final String TIME_BATCH_WINDOW = "Temperature.win:time_batch(";
     private Configuration cepConfig = new Configuration();
 
     public TemperatureEsperOperation() {
@@ -36,6 +39,7 @@ public class TemperatureEsperOperation {
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println(e);
+                throw new RuntimeException();
             }
         }
     }
@@ -50,7 +54,7 @@ public class TemperatureEsperOperation {
 
     private void executeQueries(Configuration cepConfig, String query, String providerUri){
         EPServiceProvider cep = EPServiceProviderManager.getProvider(
-                "providerUri", cepConfig);
+                providerUri, cepConfig);
         cepRT = cep.getEPRuntime();
 
         EPAdministrator cepAdm = cep.getEPAdministrator();
@@ -84,9 +88,9 @@ public class TemperatureEsperOperation {
          */
         averageQuery.append("select avg(")
                 .append("temperature) from ")
-                .append("Temperature.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(TEMPERATURE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append("");
         LOG.info("Average Query for Temperature  was set!");
         return  averageQuery.toString();
@@ -99,9 +103,9 @@ public class TemperatureEsperOperation {
          * listener.
          */
         warningQuery.append("select * from ")
-                .append("Temperature.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(TEMPERATURE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append(" match_recognize ( ")
                 .append("       measures A as temp1, B as temp2 ")
                 .append("       pattern (A B) ")
@@ -124,9 +128,9 @@ public class TemperatureEsperOperation {
          * temperature
          */
         criticalQuery.append("select * from ")
-                .append("Temperature.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(TEMPERATURE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append(" match_recognize ( ")
                 .append("       measures A as temp1, B as temp2, C as temp3, D as temp4 ")
                 .append("       pattern (A B C D) ")

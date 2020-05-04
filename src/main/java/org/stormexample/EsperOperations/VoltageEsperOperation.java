@@ -8,11 +8,14 @@ import org.stormexample.Events.VoltageEvent;
 
 public class VoltageEsperOperation {
     private static final Logger LOG = LoggerFactory.getLogger(VoltageEsperOperation.class);
+    private static final long serialVersionUID = 4L;
     private EPRuntime cepRT = null;
     private static final String VOLTAGE_TIME_WINDOW_BATCH = "15";
-    private static final String VOLTAGE_WARNING_EVENT_THRESHOLD = "10"; //TODO To be removed?
+    private static final String VOLTAGE_WARNING_EVENT_THRESHOLD = "10";
     private static final String VOLTAGE_CRITICAL_EVENT_THRESHOLD = "9";
     private static final String VOLTAGE_CRITICAL_EVENT_MULTIPLIER = "1";
+    private static final String TIME_MEASUREMENT_UNIT = " sec)";
+    private static final String TIME_BATCH_WINDOW = "Voltage.win:time_batch(";
     private Configuration cepConfig = new Configuration();
 
     public VoltageEsperOperation() {}
@@ -26,14 +29,14 @@ public class VoltageEsperOperation {
 
     public static class CEPListener implements UpdateListener {
 
-        public void update(EventBean[] newData, EventBean[] oldData) { //TODO to be updated!
+        public void update(EventBean[] newData, EventBean[] oldData) {
             try {
                 for (EventBean eventBean : newData) {
                     LOG.warn("ApacheStormMachine --> ******* Voltage Event received *******: " + eventBean.getUnderlying());
                 }
             } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println(e);
+                LOG.error("ApacheStormMachine --> Exception is Caught. Details are: " + e);
+                throw new RuntimeException();
             }
         }
     }
@@ -47,7 +50,7 @@ public class VoltageEsperOperation {
     public void esperPut(VoltageEvent Voltage) { cepRT.sendEvent(Voltage); }
 
     private void executeQueries(Configuration cepConfig, String query, String providerUri){
-        EPServiceProvider cep = EPServiceProviderManager.getProvider("providerUri", cepConfig);
+        EPServiceProvider cep = EPServiceProviderManager.getProvider(providerUri, cepConfig);
         cepRT = cep.getEPRuntime();
         EPAdministrator cepAdm = cep.getEPAdministrator();
         EPStatement cepStatement = cepAdm.createEPL(query);
@@ -80,9 +83,9 @@ public class VoltageEsperOperation {
          */
         averageQuery.append("select avg(")
                 .append("voltage) from ")
-                .append("Voltage.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(VOLTAGE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append("");
         LOG.info("Average Query for Voltage  was set!");
         return  averageQuery.toString();
@@ -95,9 +98,9 @@ public class VoltageEsperOperation {
          * listener.
          */
         warningQuery.append("select * from ")
-                .append("Voltage.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(VOLTAGE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append(" match_recognize ( ")
                 .append("       measures A as volt1, B as volt2 ")
                 .append("       pattern (A B) ")
@@ -120,9 +123,9 @@ public class VoltageEsperOperation {
          * voltage
          */
         criticalQuery.append("select * from ")
-                .append("Voltage.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(VOLTAGE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append(" match_recognize ( ")
                 .append("       measures A as volt1, B as volt2, C as volt3, D as volt4 ")
                 .append("       pattern (A B C D) ")

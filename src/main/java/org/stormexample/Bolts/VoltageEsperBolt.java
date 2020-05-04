@@ -40,6 +40,7 @@ public class VoltageEsperBolt implements IBasicBolt {
                 esperOperation.esperPut(voltageEvent);
             }catch(NumberFormatException ex){
                 LOG.error("ApacheStormMachine --> Invalid string!! Please use a  well-formatted string :)");
+                throw new NumberFormatException();
             }
         }else{
             LOG.warn("ApacheStormMachine --> String is null!!!");
@@ -47,7 +48,9 @@ public class VoltageEsperBolt implements IBasicBolt {
     }
 
     public void declareOutputFields(OutputFieldsDeclarer declarer) {
-
+        /*This bolt wont sent any data to another one. Its the final node
+        **As a result this function will be empty
+        */
     }
 
     public Map<String, Object> getComponentConfiguration() {

@@ -1,7 +1,6 @@
 package org.stormexample.EsperOperations;
 
 import com.espertech.esper.client.*;
-import org.checkerframework.checker.units.qual.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.stormexample.EsperStormTopology;
@@ -15,6 +14,8 @@ public class PressureEsperOperation {
     private static final String PRESSURE_TIME_WINDOW_BATCH = "30";
     private static final String PRESSURE_CRITICAL_EVENT_THRESHOLD = "1001.8";
     private static final String PRESSURE_CRITICAL_EVENT_ADDER = "0.2";
+    private static final String TIME_MEASUREMENT_UNIT = " sec)";
+    private static final String TIME_BATCH_WINDOW = "Pressure.win:time_batch(";
     private Configuration cepConfig = new Configuration();
 
 
@@ -31,14 +32,15 @@ public class PressureEsperOperation {
 
     public static class CEPListener implements UpdateListener {
 
-        public void update(EventBean[] newData, EventBean[] oldData) { //TODO to be updated!
-            try { //TODO to be updated in generic form:)`
+        public void update(EventBean[] newData, EventBean[] oldData) {
+            try {
                 for (EventBean eventBean : newData) {
                     LOG.warn("ApacheStormMachine --> ******* Pressure Event received *******: " + eventBean.getUnderlying());
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                System.out.println(e);
+                LOG.error("ApacheStormMachine --> Exceptions caught. Details are: : "+ e);
+                throw new RuntimeException();
             }
         }
     }
@@ -52,7 +54,7 @@ public class PressureEsperOperation {
     public void esperPut(PressureEvent Pressure) { cepRT.sendEvent(Pressure); }
 
     private void executeQueries(Configuration cepConfig, String query, String providerUri){
-        EPServiceProvider cep = EPServiceProviderManager.getProvider("providerUri", cepConfig);
+        EPServiceProvider cep = EPServiceProviderManager.getProvider(providerUri, cepConfig);
         cepRT = cep.getEPRuntime();
 
         EPAdministrator cepAdm = cep.getEPAdministrator();
@@ -87,9 +89,9 @@ public class PressureEsperOperation {
          */
         averageQuery.append("select avg(")
                 .append("pressure) from ")
-                .append("Pressure.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(PRESSURE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append("");
         LOG.info("Average Query for Pressure  was set!");
         return  averageQuery.toString();
@@ -102,9 +104,9 @@ public class PressureEsperOperation {
          * listener.
          */
         warningQuery.append("select * from ")
-                .append("Pressure.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(PRESSURE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append(" match_recognize ( ")
                 .append("       measures A as press1, B as press2 ")
                 .append("       pattern (A B) ")
@@ -126,9 +128,9 @@ public class PressureEsperOperation {
          * listener.
          */
         criticalQuery.append("select * from ")
-                .append("Pressure.win:time_batch(")
+                .append(TIME_BATCH_WINDOW)
                 .append(PRESSURE_TIME_WINDOW_BATCH)
-                .append(" sec)")
+                .append(TIME_MEASUREMENT_UNIT)
                 .append(" match_recognize ( ")
                 .append("       measures A as press1, B as press2, C as press3, D as press4 ")
                 .append("       pattern (A B C D) ")

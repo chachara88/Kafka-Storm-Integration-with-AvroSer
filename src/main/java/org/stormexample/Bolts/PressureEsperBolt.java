@@ -40,6 +40,7 @@ public class PressureEsperBolt implements IBasicBolt {
                 esperOperation.esperPut(pressureEvent);
             }catch(NumberFormatException ex){
                 LOG.error("ApacheStormMachine --> Invalid string!! Please use a  well-formatted string :)");
+                throw new NumberFormatException();
             }
         }else{
             LOG.warn("ApacheStormMachine --> String is null!!!");
