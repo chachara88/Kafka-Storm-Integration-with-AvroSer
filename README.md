@@ -23,7 +23,7 @@ Pattern recognition -patterns and regularities in data- is executed.
 3. Check for a sudden rise across 4 events where the last event is x times greater or +X greater in value than the first event. If matched, an alert is reported.
 
 # Note
-This repository can not been build since IP_ADRESS sont exost for security purposes. 
+This repository can not been build since IP_ADRESS dont exist for security purposes. 
 For a working copy of this repo, please contact me directly.
 
 # Depedencies 
