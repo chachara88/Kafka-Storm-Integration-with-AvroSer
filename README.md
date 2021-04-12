@@ -1,5 +1,5 @@
 # Description 
-This project refers to a system that executes real Time queries in streams of data.
+This project refers to a system that executes real-time queries in streams of data.
 The main tools used in this project are:
 Apache Kafka: A distributed streaming platform, used for data injection in the process engine.
 Apache Storm: A distributed realtime computation system, used for processing unbounded streams of data.
@@ -23,7 +23,7 @@ Pattern recognition -patterns and regularities in data- is executed.
 3. Check for a sudden rise across 4 events where the last event is x times greater or +X greater in value than the first event. If matched, an alert is reported.
 
 # Note
-This repository can not been build since IP_ADRESS dont exist for security purposes. 
+This repository can not be built since IP_ADRESS dont exist for security purposes. 
 For a working copy of this repo, please contact me directly.
 
 # Depedencies 
